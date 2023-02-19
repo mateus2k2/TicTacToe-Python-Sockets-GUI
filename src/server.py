@@ -19,22 +19,35 @@ simbolo = ['X', 'O']
 board = [['', '', ''],
          ['', '', ''],
          ['', '', ''],]
+jogadas = 0
 
-def checkWin(linha, coluna):
-    return False
+def checkWin():
+    for linha in range(3):
+        if board[linha][0] == board[linha][1] == board[linha][2] != '':
+            return True
+    for col in range(3):
+        if board[0][col] == board[1][col] == board[2][col] != '':
+            return True
+    for diag in range(2):
+        if board[0][0] == board[1][1] == board[2][2] != '':
+            return True
+        elif board[0][2] == board[1][1] == board[2][0] != '':
+            return True
 
 def checkVelha(linha, coluna):
-    return False
+    return (jogadas == 9)
 
 def resetGame():
     board = [['', '', ''],
              ['', '', ''],
              ['', '', ''],]
 
-def endGame():
+def endGame(sala):
     board = [['', '', ''],
              ['', '', ''],
              ['', '', ''],]
+    sala['jogador1'].close()
+    sala['jogador2'].close()
 
 # Handling Messages From Clients
 def handle(sala):
@@ -65,12 +78,14 @@ def handle(sala):
 
             if(board[linha][coluna] == ''):
                 board[linha][coluna] = simbolo[jogando]
+                jogadas += 1
                 break
             else:
                 sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
         
-        win = checkWin(linha, coluna)
-        velha = checkVelha(linha, coluna)
+        win = checkWin()
+        if win == False:
+            velha = checkVelha(linha, coluna)
 
         if win == True:
             sala['jogador' + str(jogando)].send('WIN'.encode('ascii'))
