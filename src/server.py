@@ -12,54 +12,54 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
-# {'jogador0': '', 'nickjogador0': '', 'jogador1': '', 'nickjogador1': '', 'ID': 0},
+# {'jogador0': '', 'nickjogador0': '', simbJogador0: 0 'jogador1': '', 'nickjogador1': '', simbJogador1: 0, 'ID': 0},
 salas = []
 IDCriados = []
 simbolo = ['X', 'O']
-
 board = [['', '', ''],
          ['', '', ''],
          ['', '', ''],]
 
 def checkWin(linha, coluna):
-    pass
+    return False
 
 def checkVelha(linha, coluna):
-    pass
+    return False
 
 def resetGame():
-    pass
+    board = [['', '', ''],
+             ['', '', ''],
+             ['', '', ''],]
 
 def endGame():
-    pass
+    board = [['', '', ''],
+             ['', '', ''],
+             ['', '', ''],]
 
 # Handling Messages From Clients
 def handle(sala):
+    # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
+    sala['jogador0'].send('START'.encode('ascii'))
+
     movimento = ""
 
     # pegar qual dos clientes vao jogar primeiro
     jogando = random.randint(0, 1)
-    oponente = 1 - jogando        
+    oponente = 1 - jogando
 
-    # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
-    sala['jogador0'].send('START'.encode('ascii'))
+    sala['simbJogador0'] = jogando        
+    sala['simbJogador1'] = oponente
 
+    sala['jogador' + str(jogando)].send(str(jogando).encode('ascii'))
+    sala['jogador' + str(oponente)].send(str(oponente).encode('ascii'))
+    
     while True:
 
-        sala['jogador' + str(jogando)].send('TURN'.encode('ascii'))
+        sala['jogador' + str(jogando)].send('PLAY'.encode('ascii'))
         sala['jogador' + str(oponente)].send('WAIT'.encode('ascii'))
-
-        # movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
-        # linha = int(movimento // 10)
-        # coluna = int(movimento % 10)
-
-        # if(board[linha][coluna] == ''):
-        #     board[linha][coluna] = simbolo[jogando]
-        # else:
-        #     sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
         
         while True:
-            movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
+            movimento = int(sala['jogador' + str(jogando)].recv(2).decode('ascii'))
             linha = int(movimento // 10)
             coluna = int(movimento % 10)
 
@@ -67,25 +67,14 @@ def handle(sala):
                 board[linha][coluna] = simbolo[jogando]
                 break
             else:
-                sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
+                sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
         
-
-        while board[linha][coluna] != '':
-            movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
-            linha = int(movimento // 10)
-            coluna = int(movimento % 10)
-
-            if(board[linha][coluna] == ''):
-                board[linha][coluna] = simbolo[jogando]
-            else:
-                sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
-
         win = checkWin(linha, coluna)
         velha = checkVelha(linha, coluna)
 
         if win == True:
             sala['jogador' + str(jogando)].send('WIN'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('LOOSE'.encode('ascii'))
+            sala['jogador' + str(oponente)].send('DEF'.encode('ascii'))
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
         elif velha == True:
@@ -94,15 +83,15 @@ def handle(sala):
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
         else:
-            sala['jogador' + str(jogando)].send('VALID'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('VALID'.encode('ascii'))
+            sala['jogador' + str(jogando)].send('VAL'.encode('ascii'))
+            sala['jogador' + str(oponente)].send('VAL'.encode('ascii'))
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
             
 
         if win or velha:
-            continuar1 = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
-            continuar2 = int(sala['jogador' + str(oponente)].recv(1024).decode('ascii'))
+            continuar1 = int(sala['jogador' + str(jogando)].recv(9).decode('ascii'))
+            continuar2 = int(sala['jogador' + str(oponente)].recv(9).decode('ascii'))
             
             if continuar1 == "CONTINUAR" and continuar2 == "CONTINUAR":    
                 sala['jogador' + str(jogando)].send('CONTINUAR'.encode('ascii'))
@@ -121,14 +110,11 @@ def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
 
     while True:
-        client.send('IDREQUEST'.encode('ascii'))
+        client.send('IDRQ'.encode('ascii'))
         ID = client.recv(8).decode('ascii')
         print("ID RECEBIDO: " + ID)
         if next((sala for sala in salas if sala['ID'] == ID), None) != None : break
 
-
-
-    print("TO AQUI")
     client.send('NICK'.encode('ascii'))
     nickname = client.recv(1024).decode('ascii')
     print("NICK RECEBIDO: " + nickname)
@@ -145,18 +131,9 @@ def joinRoom(client, address):
     print("{")
     [print(key,':',value) for key, value in salaCompleta.items()]
     print("}")
-    # print(salaCompleta)
 
-    # Start Handling Thread For Client
     thread = threading.Thread(target=handle, args=(salaCompleta,))
     thread.start()
-
-def waitingRoom(sala, client):
-    while('jogador2' not in sala): 
-        continue
-    
-    print("BOOL: " + 'jogador2' in sala)
-    client.send('START'.encode('ascii'))
 
 def createRoom(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
@@ -164,11 +141,11 @@ def createRoom(client, address):
     ID = str(random.randint(10000000, 99999999))
     while ID in IDCriados:
         ID = str(random.randint(10000000, 99999999))
-    client.send('ID {}'.format(ID).encode('ascii'))
+    client.send(ID.encode('ascii')) # 8 bytes
     print("ID CRIADO: " + ID)
 
-    client.send('NICK'.encode('ascii'))
-    nickname = client.recv(1024).decode('ascii')
+    client.send('NICK'.encode('ascii')) # 4 bytes
+    nickname = client.recv(1024).decode('ascii') # Nick = 1024 Bytes
     print("NICK RECEBIDO: " + nickname)
 
     salas.append({'jogador0': client, 'nickjogador0': nickname, 'ID': ID})
@@ -177,17 +154,7 @@ def createRoom(client, address):
     print("{")
     [print(key,':',value) for key, value in salas[salas.__len__()-1].items()]
     print("}")
-    # print(salas[salas.__len__()-1])
 
-    # thread = threading.Thread(target=waitingRoom, args=(salas[salas.__len__()-1],client,))
-    # thread.start()
-
-    # verficar se a sala salas[salas.__len__()-1] tem mais um jogador
-    # while('jogador2' not in salas[salas.__len__()-1]): 
-    #     continue
-    
-    # print("BOOL: " + 'jogador2' in salas[salas.__len__()-1])
-    # client.send('START'.encode('ascii'))
 
 def decide():
     while True:
