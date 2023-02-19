@@ -37,26 +37,39 @@ def endGame():
 def handle(sala):
     movimento = ""
 
+    # pegar qual dos clientes vao jogar primeiro
     jogando = random.randint(0, 1)
     oponente = 1 - jogando        
 
+    # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
 
     while True:
-        # pegar qual dos clientes vao jogar primeiro
 
         sala['jogador' + str(jogando)].send('TURN'.encode('ascii'))
         sala['jogador' + str(oponente)].send('WAIT'.encode('ascii'))
 
-        movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
-        linha = int(movimento // 10)
-        coluna = int(movimento % 10)
+        # movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
+        # linha = int(movimento // 10)
+        # coluna = int(movimento % 10)
 
-        if(board[linha][coluna] == ''):
-            board[linha][coluna] = simbolo[jogando]
-        else:
-            sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
+        # if(board[linha][coluna] == ''):
+        #     board[linha][coluna] = simbolo[jogando]
+        # else:
+        #     sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
         
+        while True:
+            movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
+            linha = int(movimento // 10)
+            coluna = int(movimento % 10)
+
+            if(board[linha][coluna] == ''):
+                board[linha][coluna] = simbolo[jogando]
+                break
+            else:
+                sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
+        
+
         while board[linha][coluna] != '':
             movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
             linha = int(movimento // 10)

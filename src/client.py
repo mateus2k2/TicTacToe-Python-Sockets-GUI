@@ -15,18 +15,29 @@ def resetGame():
     pass
 
 def jogar():
-    print("JOGANDO")
-    movimento = "11"
+    print("\nJOGANDO")
+    movimento = ""
     while True:
         message = client.recv(1024).decode('ascii')
-        
-        if message == 'TURN':
-            client.send(movimento.encode('ascii'))
-            message = client.recv(1024).decode('ascii')
+        print("MENSAGEM TURNO: " + message)
 
-            while message == "INVALID":
+        if message == 'TURN':
+            # movimento = input("Digite o Movimento: ")
+            # client.send(movimento.encode('ascii'))
+            
+            # message = client.recv(1024).decode('ascii')
+            # print("MENSAGEM TURNO: " + message)
+
+            # while message == "INVALID":
+            #     client.send(movimento.encode('ascii'))
+            #     message = client.recv(1024).decode('ascii')
+
+            while True:
+                movimento = input("Digite o Movimento: ")
                 client.send(movimento.encode('ascii'))
-                message = client.recv(1024).decode('ascii')
+                message = client.recv(1024).decode('ascii'); print("MENSAGEM TURNO: " + message)
+                if message != "INVALID": break
+
 
             message = client.recv(1024).decode('ascii')
             if message == "WIN":
