@@ -71,14 +71,14 @@ def joinGame():
     ID = "84947135"
     nickname = "jogador1"
 
-    message = client.recv(9).decode('ascii')
-    print("MENSAGEM RECEBIDO JOIN 1: " + message)
-    while message == "IDREQUEST":
+    while True:
+        message = client.recv(9).decode('ascii')
+        print("MENSAGEM RECEBIDO JOIN 1: " + message)
+        if message != "IDREQUEST": break
         ID = input("Digite o ID: ")
         client.send(ID.encode('ascii'))
-        message = client.recv(9).decode('ascii')
 
-    message = client.recv(4).decode('ascii')
+    # message = client.recv(4).decode('ascii')
     print("MENSAGEM RECEBIDO JOIN 2: " + message)
     if message == 'NICK':
         client.send(nickname.encode('ascii'))

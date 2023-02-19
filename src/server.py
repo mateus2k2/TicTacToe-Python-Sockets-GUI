@@ -39,6 +39,9 @@ def handle(sala):
 
     jogando = random.randint(0, 1)
     oponente = 1 - jogando        
+
+    sala['jogador0'].send('START'.encode('ascii'))
+
     while True:
         # pegar qual dos clientes vao jogar primeiro
 
@@ -104,14 +107,13 @@ def handle(sala):
 def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
 
-    client.send('IDREQUEST '.encode('ascii'))
-    ID = client.recv(8).decode('ascii')
-    print("ID RECEBIDO: " + ID)
-    
-    while next((sala for sala in salas if sala['ID'] == ID), None) == None:
-        print("ENTROU")
+    while True:
         client.send('IDREQUEST'.encode('ascii'))
         ID = client.recv(8).decode('ascii')
+        print("ID RECEBIDO: " + ID)
+        if next((sala for sala in salas if sala['ID'] == ID), None) != None : break
+
+
 
     print("TO AQUI")
     client.send('NICK'.encode('ascii'))
@@ -136,12 +138,12 @@ def joinRoom(client, address):
     thread = threading.Thread(target=handle, args=(salaCompleta,))
     thread.start()
 
-def waitingRoom(sala):
+def waitingRoom(sala, client):
     while('jogador2' not in sala): 
         continue
     
     print("BOOL: " + 'jogador2' in sala)
-    sala['jogador0'].send('START'.encode('ascii'))
+    client.send('START'.encode('ascii'))
 
 def createRoom(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
@@ -164,8 +166,8 @@ def createRoom(client, address):
     print("}")
     # print(salas[salas.__len__()-1])
 
-    thread = threading.Thread(target=waitingRoom, args=(salas[salas.__len__()-1],))
-    thread.start()
+    # thread = threading.Thread(target=waitingRoom, args=(salas[salas.__len__()-1],client,))
+    # thread.start()
 
     # verficar se a sala salas[salas.__len__()-1] tem mais um jogador
     # while('jogador2' not in salas[salas.__len__()-1]): 
