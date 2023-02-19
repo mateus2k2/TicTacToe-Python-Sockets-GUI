@@ -1,10 +1,11 @@
 import socket
 import threading
 import random
+import json
 
 # Connection Data
 host = '127.0.0.1'
-port = 55555
+port = 55546
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,7 +17,9 @@ salas = []
 IDCriados = []
 simbolo = ['X', 'O']
 
-board = [[]]
+board = [['', '', ''],
+         ['', '', ''],
+         ['', '', ''],]
 
 def checkWin(linha, coluna):
     pass
@@ -51,7 +54,7 @@ def handle(sala):
         else:
             sala['jogador' + str(jogando)].send('INVALID'.encode('ascii'))
         
-        while board[linha][coluna] is not '':
+        while board[linha][coluna] != '':
             movimento = int(sala['jogador' + str(jogando)].recv(1024).decode('ascii'))
             linha = int(movimento // 10)
             coluna = int(movimento % 10)
@@ -99,18 +102,22 @@ def handle(sala):
         oponente = 1 - oponente        
 
 def joinRoom(client, address):
-    print("CONNECTED {}".format(str(address)))
+    print("CONNECTED JOIN{}".format(str(address)))
 
     client.send('IDREQUEST '.encode('ascii'))
-    ID = client.recv(1024).decode('ascii')
+    ID = client.recv(8).decode('ascii')
+    print("ID RECEBIDO: " + ID)
     
     while next((sala for sala in salas if sala['ID'] == ID), None) == None:
-        client.send('IDREQUEST '.encode('ascii'))
-        ID = client.recv(1024).decode('ascii')
+        print("ENTROU")
+        client.send('IDREQUEST'.encode('ascii'))
+        ID = client.recv(8).decode('ascii')
 
+    print("TO AQUI")
     client.send('NICK'.encode('ascii'))
     nickname = client.recv(1024).decode('ascii')
-    
+    print("NICK RECEBIDO: " + nickname)
+
     salaCompleta = {}
     for sala in salas:
         if sala['ID'] == ID:
@@ -118,41 +125,65 @@ def joinRoom(client, address):
             sala['nickjogador1'] = nickname
             salaCompleta = sala
             break
-
-    print(salaCompleta)
+    
+    print("SALA COMPLETA")
+    print("{")
+    [print(key,':',value) for key, value in salaCompleta.items()]
+    print("}")
+    # print(salaCompleta)
 
     # Start Handling Thread For Client
     thread = threading.Thread(target=handle, args=(salaCompleta,))
     thread.start()
 
+def waitingRoom(sala):
+    while('jogador2' not in sala): 
+        continue
+    
+    print("BOOL: " + 'jogador2' in sala)
+    sala['jogador0'].send('START'.encode('ascii'))
+
 def createRoom(client, address):
-    print("CONNECTED {}".format(str(address)))
+    print("CONNECTED CREATE {}".format(str(address)))
 
     ID = str(random.randint(10000000, 99999999))
     while ID in IDCriados:
         ID = str(random.randint(10000000, 99999999))
     client.send('ID {}'.format(ID).encode('ascii'))
+    print("ID CRIADO: " + ID)
 
     client.send('NICK'.encode('ascii'))
     nickname = client.recv(1024).decode('ascii')
+    print("NICK RECEBIDO: " + nickname)
 
     salas.append({'jogador0': client, 'nickjogador0': nickname, 'ID': ID})
 
-    print(salas[salas.__len__()-1])
+    print("SALA CRIADA")
+    print("{")
+    [print(key,':',value) for key, value in salas[salas.__len__()-1].items()]
+    print("}")
+    # print(salas[salas.__len__()-1])
+
+    thread = threading.Thread(target=waitingRoom, args=(salas[salas.__len__()-1],))
+    thread.start()
 
     # verficar se a sala salas[salas.__len__()-1] tem mais um jogador
-    while('jogador2' in [sala.keys() for sala in salas] == False): continue
-    client.send('START'.encode('ascii'))
-
+    # while('jogador2' not in salas[salas.__len__()-1]): 
+    #     continue
+    
+    # print("BOOL: " + 'jogador2' in salas[salas.__len__()-1])
+    # client.send('START'.encode('ascii'))
 
 def decide():
-    client, address = server.accept()
+    while True:
+        print("\nSERVIDOR ESPERANDO\n")
+        client, address = server.accept()
 
-    escolha = client.recv(1024).decode('ascii')
+        escolha = client.recv(1024).decode('ascii')
 
-    if escolha == "JOIN":
-        joinRoom(client, address)
-    elif escolha == "CREATE":
-        createRoom(client, address)
+        if escolha == "JOIN":
+            joinRoom(client, address)
+        elif escolha == "CREATE":
+            createRoom(client, address)
 
 decide()
