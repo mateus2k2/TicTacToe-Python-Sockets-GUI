@@ -8,14 +8,28 @@ client.connect(('127.0.0.1', 55546))
 simbolo = -1
 ID = ""
 nickname = ""
+board = [['', 'O', 'X'],
+         ['X', 'O', 'X'],
+         ['O', 'X', 'O'],]
 
 simbolos = ['X', 'O']
-board = [['', '', ''],
-         ['', '', ''],
-         ['', '', ''],]
+
+def printBoard():
+    for row in board:
+        for item in row:
+            print(item, end=" ")
+        print()
 
 def resetGame():
-    pass
+    board[0][0] = ''; board[0][1] = ''; board[0][2]  = '';
+    board[1][0] = ''; board[1][1] = ''; board[1][2]  = '';
+    board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
+
+def endGame():
+    board[0][0] = ''; board[0][1] = ''; board[0][2]  = '';
+    board[1][0] = ''; board[1][1] = ''; board[1][2]  = '';
+    board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
+    client.close()
 
 def jogar():
     print("\nJOGANDO")
@@ -40,40 +54,92 @@ def jogar():
             # message = client.recv(5).decode('ascii')
             if message == "WIN":
                 print("You WIN")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[simbolo]
+                printBoard()
+
             elif message == "TIE":
                 print("Deu Empate")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[simbolo]
+                printBoard()
+
             elif message == "VAL":
                 print("Movimento Valido")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[simbolo]
+                printBoard()
             
-            if message == "DEF" or message == "TIE":
-                client.send("CONTINUAR".encode('ascii'))
-                resetGame()
+            if message == "WIN" or message == "TIE":
+                continuar = input("Escolha CNT ou END: ")
+                client.send(continuar.encode('ascii'))
+                continuar = client.recv(3).decode('ascii')
+
+                if continuar == "CNT":
+                    print("Resetando o Jogo")
+                    resetGame()
+                elif continuar == "END":
+                    print("Encerando o Jogo")
+                    endGame()
+                    break
 
         elif message == "WAIT":
             message = client.recv(3).decode('ascii')
 
             if message == "DEF":
                 print("You Loose")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+                
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[1 - simbolo]
+                printBoard()
+
             elif message == "TIE":
                 print("Deu Empate")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[1 - simbolo]
+                printBoard()
+
             elif message == "VAL":
                 print("Movimento Valido")
-                message = client.recv(2).decode('ascii')
-                print("Movimento: " + message)
+                movimento = int(client.recv(2).decode('ascii'))
+                print("Movimento: " + str(movimento))
+
+                linha = int(movimento // 10) - 1
+                coluna = int(movimento % 10) - 1
+                board[linha][coluna] = simbolos[1 - simbolo]
+                printBoard()
             
             if message == "DEF" or message == "TIE":
-                client.send("CONTINUAR".encode('ascii'))
-                resetGame()
+                continuar = input("Escolha CNT ou END: ")
+                client.send(continuar.encode('ascii'))
+                continuar = client.recv(3).decode('ascii')
+
+                if continuar == "CNT":
+                    print("Resetando o Jogo")
+                    resetGame()
+                elif continuar == "END":
+                    print("Encerando o Jogo")
+                    endGame()
+                    break
 
 def joinGame():
     client.send("JOIN".encode('ascii'))

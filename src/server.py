@@ -1,7 +1,6 @@
 import socket
 import threading
 import random
-import json
 
 # Connection Data
 host = '127.0.0.1'
@@ -12,47 +11,58 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host, port))
 server.listen()
 
-# {'jogador0': '', 'nickjogador0': '', simbJogador0: 0 'jogador1': '', 'nickjogador1': '', simbJogador1: 0, 'ID': 0},
 salas = []
 IDCriados = []
 simbolo = ['X', 'O']
-board = [['', '', ''],
-         ['', '', ''],
-         ['', '', ''],]
 
-def checkWin():
+def checkWin(sala):
     for linha in range(3):
-        if board[linha][0] == board[linha][1] == board[linha][2] != '':
+        if sala['board'][linha][0] == sala['board'][linha][1] == sala['board'][linha][2] != '':
             return True
     for col in range(3):
-        if board[0][col] == board[1][col] == board[2][col] != '':
+        if sala['board'][0][col] == sala['board'][1][col] == sala['board'][2][col] != '':
             return True
     for diag in range(2):
-        if board[0][0] == board[1][1] == board[2][2] != '':
+        if sala['board'][0][0] == sala['board'][1][1] == sala['board'][2][2] != '':
             return True
-        elif board[0][2] == board[1][1] == board[2][0] != '':
+        elif sala['board'][0][2] == sala['board'][1][1] == sala['board'][2][0] != '':
             return True
 
-def checkVelha(jogadas):
-    return jogadas == 9
+def checkVelha(sala):
+    return sala['jogadas'] == 9
 
-def resetGame():
-    board = [['', '', ''],
-             ['', '', ''],
-             ['', '', ''],]
+def resetGame(sala):
+    sala['board'][0][0] = ''; sala['board'][0][1] = ''; sala['board'][0][2]  = '';
+    sala['board'][1][0] = ''; sala['board'][1][1] = ''; sala['board'][1][2]  = '';
+    sala['board'][2][0] = ''; sala['board'][2][1] = ''; sala['board'][2][2]  = '';
+
+    sala['jogadas'] = 0
 
 def endGame(sala):
-    board = [['', '', ''],
-             ['', '', ''],
-             ['', '', ''],]
-    sala['jogador1'].close()
-    sala['jogador2'].close()
+    sala['board'][0][0] = ''; sala['board'][0][1] = ''; sala['board'][0][2]  = '';
+    sala['board'][1][0] = ''; sala['board'][1][1] = ''; sala['board'][1][2]  = '';
+    sala['board'][2][0] = ''; sala['board'][2][1] = ''; sala['board'][2][2]  = '';
 
-# Handling Messages From Clients
+    sala['jogador0'].close()
+    sala['jogador1'].close()
+
+    # deletar a sala do vetor de salas
+    # del next((salaRet for salaRet in salas if salaRet['ID'] == sala['ID']), None)
+    salas.remove(sala)
+
+def printBoard(sala):
+    for row in sala['board']:
+        for item in row:
+            print(item, end=" ")
+        print()
+
 def handle(sala):
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
-    jogadas = 0
+    sala['board'] = [[ '', 'O', 'X'], #--------------------------------------
+                     ['X', 'O', 'X'],
+                     ['O', 'X', 'O'],]
+    sala['jogadas'] = 8 #------------------------------------------------
     movimento = ""
 
     # pegar qual dos clientes vao jogar primeiro
@@ -62,8 +72,8 @@ def handle(sala):
     sala['simbJogador0'] = jogando        
     sala['simbJogador1'] = oponente
 
-    sala['jogador' + str(jogando)].send(str(jogando).encode('ascii'))
-    sala['jogador' + str(oponente)].send(str(oponente).encode('ascii'))
+    sala['jogador' + str(jogando)].send("0".encode('ascii'))
+    sala['jogador' + str(oponente)].send("1".encode('ascii'))
     
     while True:
 
@@ -75,42 +85,50 @@ def handle(sala):
             linha = int(movimento // 10) - 1
             coluna = int(movimento % 10) - 1
 
-            if(board[linha][coluna] == ''):
-                board[linha][coluna] = simbolo[jogando]
-                jogadas += 1
+            if(sala['board'][linha][coluna] == ''):
+                sala['board'][linha][coluna] = simbolo[jogando]
+                sala['jogadas'] += 1
                 break
             else:
                 sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
         
-        win = checkWin()
-        velha = checkVelha(jogadas)
+        win = checkWin(sala)
+        velha = checkVelha(sala)
 
         if win == True:
             sala['jogador' + str(jogando)].send('WIN'.encode('ascii'))
             sala['jogador' + str(oponente)].send('DEF'.encode('ascii'))
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
+
+            # printBoard(sala)
         elif velha == True:
             sala['jogador' + str(jogando)].send('TIE'.encode('ascii'))
             sala['jogador' + str(oponente)].send('TIE'.encode('ascii'))
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
+            
+            # printBoard(sala)
         else:
             sala['jogador' + str(jogando)].send('VAL'.encode('ascii'))
             sala['jogador' + str(oponente)].send('VAL'.encode('ascii'))
             sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
             sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
             
+            # printBoard(sala)
+            
 
         if win or velha:
-            continuar1 = int(sala['jogador' + str(jogando)].recv(9).decode('ascii'))
-            continuar2 = int(sala['jogador' + str(oponente)].recv(9).decode('ascii'))
-            
-            if continuar1 == "CONTINUAR" and continuar2 == "CONTINUAR":    
-                sala['jogador' + str(jogando)].send('CONTINUAR'.encode('ascii'))
-                sala['jogador' + str(oponente)].send('CONTINUAR'.encode('ascii'))
-                resetGame()
-            else:
+            continuar1 = sala['jogador' + str(jogando)].recv(3).decode('ascii')
+            continuar2 = sala['jogador' + str(oponente)].recv(3).decode('ascii')
+
+            if continuar1 == "CNT" and continuar2 == "CNT":  
+                print("Resetando jogo")
+                sala['jogador' + str(jogando)].send('CNT'.encode('ascii'))
+                sala['jogador' + str(oponente)].send('CNT'.encode('ascii'))
+                resetGame(sala)
+            elif continuar1 == "END" and continuar2 == "END":
+                print("Encerrando o jogo")
                 sala['jogador' + str(jogando)].send('END'.encode('ascii'))
                 sala['jogador' + str(oponente)].send('END'.encode('ascii'))
                 endGame(sala)

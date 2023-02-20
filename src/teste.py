@@ -1,7 +1,9 @@
-# example python dictionary 
-string = "123"
-print(len(string.encode('utf-8')))
+def func1():
+    jogadas = 0
+    func2(jogadas)
+    print(jogadas)
 
-teste = int(input("Digite o Movimento: "))
+def func2(jogadas):
+    jogadas = 2
 
-print(teste)
+func1()
