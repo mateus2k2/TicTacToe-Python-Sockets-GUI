@@ -19,7 +19,6 @@ simbolo = ['X', 'O']
 board = [['', '', ''],
          ['', '', ''],
          ['', '', ''],]
-jogadas = 0
 
 def checkWin():
     for linha in range(3):
@@ -34,8 +33,8 @@ def checkWin():
         elif board[0][2] == board[1][1] == board[2][0] != '':
             return True
 
-def checkVelha(linha, coluna):
-    return (jogadas == 9)
+def checkVelha(jogadas):
+    return jogadas == 9
 
 def resetGame():
     board = [['', '', ''],
@@ -53,7 +52,7 @@ def endGame(sala):
 def handle(sala):
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
-
+    jogadas = 0
     movimento = ""
 
     # pegar qual dos clientes vao jogar primeiro
@@ -73,8 +72,8 @@ def handle(sala):
         
         while True:
             movimento = int(sala['jogador' + str(jogando)].recv(2).decode('ascii'))
-            linha = int(movimento // 10)
-            coluna = int(movimento % 10)
+            linha = int(movimento // 10) - 1
+            coluna = int(movimento % 10) - 1
 
             if(board[linha][coluna] == ''):
                 board[linha][coluna] = simbolo[jogando]
@@ -84,8 +83,7 @@ def handle(sala):
                 sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
         
         win = checkWin()
-        if win == False:
-            velha = checkVelha(linha, coluna)
+        velha = checkVelha(jogadas)
 
         if win == True:
             sala['jogador' + str(jogando)].send('WIN'.encode('ascii'))
