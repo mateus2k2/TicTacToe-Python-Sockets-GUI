@@ -4,7 +4,7 @@ import random
 
 # Connection Data
 host = '127.0.0.1'
-port = 55546
+port = 55547
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -56,6 +56,12 @@ def printBoard(sala):
             print(item, end=" ")
         print()
 
+def sendGameState(jogador1, jogador2,  mensagem1, mensage2, movimento):
+    jogador1.send(mensagem1.encode('ascii'))
+    jogador2.send(mensage2.encode('ascii'))
+    jogador1.send(str(movimento).encode('ascii'))
+    jogador2.send(str(movimento).encode('ascii'))
+    
 def handle(sala):
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
@@ -96,27 +102,14 @@ def handle(sala):
         velha = checkVelha(sala)
 
         if win == True:
-            sala['jogador' + str(jogando)].send('WIN'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('DEF'.encode('ascii'))
-            sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
-            sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
-
+            sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'WIN', 'DEF', movimento)
             # printBoard(sala)
         elif velha == True:
-            sala['jogador' + str(jogando)].send('TIE'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('TIE'.encode('ascii'))
-            sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
-            sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
-            
+            sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'TIE', 'TIE', movimento)
             # printBoard(sala)
         else:
-            sala['jogador' + str(jogando)].send('VAL'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('VAL'.encode('ascii'))
-            sala['jogador' + str(jogando)].send(str(movimento).encode('ascii'))
-            sala['jogador' + str(oponente)].send(str(movimento).encode('ascii'))
-            
+            sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'VAL', 'VAL', movimento)
             # printBoard(sala)
-            
 
         if win or velha:
             continuar1 = sala['jogador' + str(jogando)].recv(3).decode('ascii')
@@ -127,7 +120,7 @@ def handle(sala):
                 sala['jogador' + str(jogando)].send('CNT'.encode('ascii'))
                 sala['jogador' + str(oponente)].send('CNT'.encode('ascii'))
                 resetGame(sala)
-            elif continuar1 == "END" and continuar2 == "END":
+            elif continuar1 == "END" or continuar2 == "END":
                 print("Encerrando o jogo")
                 sala['jogador' + str(jogando)].send('END'.encode('ascii'))
                 sala['jogador' + str(oponente)].send('END'.encode('ascii'))
@@ -185,7 +178,6 @@ def createRoom(client, address):
     print("{")
     [print(key,':',value) for key, value in salas[salas.__len__()-1].items()]
     print("}")
-
 
 def decide():
     while True:

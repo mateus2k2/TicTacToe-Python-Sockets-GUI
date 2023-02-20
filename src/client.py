@@ -1,11 +1,10 @@
 import socket
-import threading
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 55546))
+client.connect(('127.0.0.1', 55547))
 
-simbolo = -1
+# simbolo = -1
 ID = ""
 nickname = ""
 board = [['', 'O', 'X'],
@@ -31,6 +30,28 @@ def endGame():
     board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
     client.close()
 
+def recvGameState(simbolo):
+    movimento = int(client.recv(2).decode('ascii'))
+    linha = int(movimento // 10) - 1
+    coluna = int(movimento % 10) - 1
+    board[linha][coluna] = simbolos[simbolo]
+
+    print("Movimento: " + str(movimento))
+
+def endGameDecide():
+    continuar = input("Escolha CNT ou END: ")
+    client.send(continuar.encode('ascii'))
+    continuar = client.recv(3).decode('ascii')
+
+    if continuar == "CNT":
+        print("Resetando o Jogo")
+        resetGame()
+        return False
+    elif continuar == "END":
+        print("Encerando o Jogo")
+        endGame()
+        return True
+
 def jogar():
     print("\nJOGANDO")
     movimento = ""
@@ -50,96 +71,45 @@ def jogar():
                 message = client.recv(3).decode('ascii'); print("MENSAGEM: " + message)
                 if message != "INV": break
 
-
             # message = client.recv(5).decode('ascii')
             if message == "WIN":
                 print("You WIN")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[simbolo]
+                recvGameState(simbolo)
                 printBoard()
 
             elif message == "TIE":
                 print("Deu Empate")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[simbolo]
+                recvGameState(simbolo)
                 printBoard()
 
             elif message == "VAL":
                 print("Movimento Valido")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[simbolo]
+                recvGameState(simbolo)
                 printBoard()
             
-            if message == "WIN" or message == "TIE":
-                continuar = input("Escolha CNT ou END: ")
-                client.send(continuar.encode('ascii'))
-                continuar = client.recv(3).decode('ascii')
-
-                if continuar == "CNT":
-                    print("Resetando o Jogo")
-                    resetGame()
-                elif continuar == "END":
-                    print("Encerando o Jogo")
-                    endGame()
-                    break
-
+            if (message == "WIN" or message == "TIE") and endGameDecide():
+                break
+                
         elif message == "WAIT":
             message = client.recv(3).decode('ascii')
 
             if message == "DEF":
                 print("You Loose")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-                
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[1 - simbolo]
+                recvGameState(simbolo)
                 printBoard()
 
             elif message == "TIE":
                 print("Deu Empate")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[1 - simbolo]
+                recvGameState(simbolo)
                 printBoard()
 
             elif message == "VAL":
                 print("Movimento Valido")
-                movimento = int(client.recv(2).decode('ascii'))
-                print("Movimento: " + str(movimento))
-
-                linha = int(movimento // 10) - 1
-                coluna = int(movimento % 10) - 1
-                board[linha][coluna] = simbolos[1 - simbolo]
+                recvGameState(simbolo)
                 printBoard()
             
-            if message == "DEF" or message == "TIE":
-                continuar = input("Escolha CNT ou END: ")
-                client.send(continuar.encode('ascii'))
-                continuar = client.recv(3).decode('ascii')
-
-                if continuar == "CNT":
-                    print("Resetando o Jogo")
-                    resetGame()
-                elif continuar == "END":
-                    print("Encerando o Jogo")
-                    endGame()
-                    break
+            if (message == "DEF" or message == "TIE") and endGameDecide():
+                break
 
 def joinGame():
     client.send("JOIN".encode('ascii'))
@@ -154,7 +124,6 @@ def joinGame():
         ID = input("Digite o ID: ")
         client.send(ID.encode('ascii'))
 
-    # message = client.recv(4).decode('ascii')
     print("MENSAGEM RECEBIDO JOIN 2: " + message)
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
@@ -177,11 +146,6 @@ def createGame():
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
-    # message = client.recv(4).decode('ascii')
-    # print("MENSAGEM RECEBIDO CREATE 3: " + message)
-    # if message == 'SINB':
-    #     client.send(str(sinbolo).encode('ascii'))
-
     message = client.recv(5).decode('ascii')
     print("MENSAGEM RECEBIDO CREATE 4: " + message)
     if message == 'START': jogar()
@@ -191,10 +155,4 @@ escolha = input("Entrar(0) ou Criar(1): ")
 if escolha == "0":
     joinGame()
 elif escolha == "1":
-    createGame()
-
-# receive_thread = threading.Thread(target=receive)
-# receive_thread.start()
-
-# write_thread = threading.Thread(target=write)
-# write_thread.start()
+    createGame()    
