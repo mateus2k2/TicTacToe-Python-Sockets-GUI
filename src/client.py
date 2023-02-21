@@ -2,11 +2,11 @@ import socket
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1', 55549))
 
 # inicializa o jogo
 ID = ""
 nickname = ""
+nicknameOpodente = ""
 board = [['', 'O', 'X'],
          ['X', 'O', 'X'],
          ['O', 'X', 'O'],]
@@ -145,7 +145,18 @@ def jogar():
             if (message == "DEF" or message == "TIE") and endGameDecide():
                 break
 
+def connectToServer(ip, port):
+    try:
+        client.connect((ip, port))
+    except:
+        print("Server is not running")
+        return False
+    return True
+    
 def joinGame():
+    if connectToServer(('127.0.0.1', 55549)) == False:
+        return 'Server is not running'
+
     client.send("JOIN".encode('ascii'))
     print("JOIN")
 
@@ -164,6 +175,9 @@ def joinGame():
     jogar()
 
 def createGame():
+    if connectToServer(('127.0.0.1', 55549)) == False:
+        return 'Server is not running'
+        
     client.send("CREATE".encode('ascii'))
     print("CREATE")
 
@@ -171,7 +185,7 @@ def createGame():
 
     message = client.recv(8).decode('ascii')
     ID = message
-    print("MENSAGEM: " + message)
+    print("MENSAGEM: " + ID)
 
     message = client.recv(4).decode('ascii')
     print("MENSAGEM: " + message)
@@ -191,4 +205,4 @@ def decide():
     elif escolha == "2":
         joinGame()
 
-decide()
+# decide()
