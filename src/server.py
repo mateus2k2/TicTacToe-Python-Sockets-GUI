@@ -15,6 +15,8 @@ salas = []
 IDCriados = []
 simbolo = ['X', 'O']
 
+
+
 def checkWin(sala):
     for linha in range(3):
         if sala['board'][linha][0] == sala['board'][linha][1] == sala['board'][linha][2] != '':

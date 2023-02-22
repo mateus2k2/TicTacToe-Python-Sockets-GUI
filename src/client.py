@@ -1,8 +1,10 @@
 import socket
+from telas.clientGUI import ClientGUI as tela
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 55547))
+
 
 # simbolo = -1
 ID = ""
@@ -12,6 +14,8 @@ board = [['', 'O', 'X'],
          ['O', 'X', 'O'],]
 
 simbolos = ['X', 'O']
+
+tela = tela()
 
 def printBoard():
     for row in board:
@@ -64,9 +68,9 @@ def jogar():
         print("MENSAGEM TURNO: " + message)
 
         if message == 'PLAY':
-
             while True:
-                movimento = input("Digite o Movimento: ")
+                #movimento = input("Digite o Movimento: ")
+                movimento = tela.texto
                 client.send(movimento.encode('ascii'))
                 message = client.recv(3).decode('ascii'); print("MENSAGEM: " + message)
                 if message != "INV": break
@@ -121,7 +125,7 @@ def joinGame():
         message = client.recv(4).decode('ascii')
         print("MENSAGEM RECEBIDO JOIN 1: " + message)
         if message != "IDRQ": break
-        ID = input("Digite o ID: ")
+        ID = tela.texto
         client.send(ID.encode('ascii'))
 
     print("MENSAGEM RECEBIDO JOIN 2: " + message)
@@ -139,6 +143,7 @@ def createGame():
 
     message = client.recv(8).decode('ascii')
     ID = message
+    tela.ID = ID
     print("MENSAGEM RECEBIDO CREATE 1: " + message)
 
     message = client.recv(4).decode('ascii')
@@ -150,7 +155,7 @@ def createGame():
     print("MENSAGEM RECEBIDO CREATE 4: " + message)
     if message == 'START': jogar()
 
-escolha = input("Entrar(0) ou Criar(1): ")
+escolha = tela.escolha
 
 if escolha == "0":
     joinGame()
