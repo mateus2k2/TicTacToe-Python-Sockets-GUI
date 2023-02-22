@@ -198,8 +198,7 @@ def joinRoom(client, address):
     print("\nSALA COMPLETA")
     [print(key,':',str(value)[:50]) for key, value in salaCompleta.items()]
 
-    thread = threading.Thread(target=handle, args=(salaCompleta,))
-    thread.start()
+    handle(sala)
 
 def createRoom(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
@@ -229,8 +228,10 @@ def decide():
         escolha = client.recv(1024).decode('ascii')
 
         if escolha == "JOIN":
-            joinRoom(client, address)
+            thread = threading.Thread(target=joinRoom, args=(client, address,))
+            thread.start()
         elif escolha == "CREATE":
-            createRoom(client, address)
+            thread = threading.Thread(target=createRoom, args=(client, address,))
+            thread.start()
 
 decide()

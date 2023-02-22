@@ -154,13 +154,11 @@ def connectToServer(ip, port):
     return True
     
 def joinGame():
-    if connectToServer(('127.0.0.1', 55549)) == False:
+    if connectToServer('127.0.0.1', 55549) == False:
         return 'Server is not running'
 
     client.send("JOIN".encode('ascii'))
     print("JOIN")
-
-    nickname = input("Input NICK: ")
 
     while True:
         message = client.recv(4).decode('ascii')
@@ -169,24 +167,24 @@ def joinGame():
         ID = input("Input ID: ")
         client.send(ID.encode('ascii'))
 
+    nickname = input("Input NICK: ")
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
     jogar()
 
 def createGame():
-    if connectToServer(('127.0.0.1', 55549)) == False:
+    if connectToServer('127.0.0.1', 55549) == False:
         return 'Server is not running'
         
     client.send("CREATE".encode('ascii'))
     print("CREATE")
 
-    nickname = input("Input NICK: ")
-
     message = client.recv(8).decode('ascii')
     ID = message
     print("MENSAGEM: " + ID)
 
+    nickname = input("Input NICK: ")
     message = client.recv(4).decode('ascii')
     print("MENSAGEM: " + message)
     if message == 'NICK':
@@ -205,4 +203,4 @@ def decide():
     elif escolha == "2":
         joinGame()
 
-# decide()
+decide()

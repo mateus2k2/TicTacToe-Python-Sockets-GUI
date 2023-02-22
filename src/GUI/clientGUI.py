@@ -8,15 +8,25 @@ from client import *
 
 # Create the main window
 window = tk.Tk()
-window.title("My GUI")
-
-# Create the label for the title
-title_label = tk.Label(window, text="Welcome to my GUI!", font=("Arial", 24))
-title_label.pack(pady=20) # Add some padding to the top
 
 def resetWindow():
     for item in window.winfo_children():
         item.destroy()
+
+def mainWindow():
+    window.title("My GUI")
+
+    # Create the label for the title
+    title_label = tk.Label(window, text="Welcome to my GUI!", font=("Arial", 24))
+    title_label.pack(pady=20) # Add some padding to the top
+
+    # Create the two buttons
+    button1 = tk.Button(window, text="Join", command=join_game)
+    button2 = tk.Button(window, text="Create", command=create_game)
+
+    # Add the buttons to the window
+    button1.pack(side="left", padx=20)
+    button2.pack(side="right", padx=20)
 
 def join_game():
     resetWindow()
@@ -68,13 +78,7 @@ def create_game():
     ok_button = tk.Button(window, text="OK", command=ok_callback)
     ok_button.pack(pady=10)
 
-# Create the two buttons
-button1 = tk.Button(window, text="Join", command=join_game)
-button2 = tk.Button(window, text="Create", command=create_game)
-
-# Add the buttons to the window
-button1.pack(side="left", padx=20)
-button2.pack(side="right", padx=20)
+mainWindow()
 
 # Start the GUI
 window.mainloop()
