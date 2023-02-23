@@ -1,2 +1,6 @@
 127.0.0.1
 55549
+
+cd src/GUI/
+python GUIMain.py 
+python src/server.py

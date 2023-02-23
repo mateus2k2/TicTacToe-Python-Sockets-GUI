@@ -1,7 +1,10 @@
 import socket
+import threading
+
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+event = threading.Event()
 
 # inicializa o jogo
 ID = ""
@@ -13,6 +16,9 @@ board = [['', 'O', 'X'],
 
 # vetor auxiliar para determinar o simbolo do jogador
 simbolos = ['X', 'O']
+
+def getEvent():
+    return event
 
 def printBoard():
     for i in range(3):
@@ -165,13 +171,21 @@ def joinGame(GUINick):
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
-
 def sendID(GUIID):
+    # print("GUIID" + GUIID)
+    # message = client.recv(4).decode('ascii')
+    # print("MENSAGEM: " + message)
+    # if message != "IDRQ": return True
+    # ID = GUIID
+    # client.send(ID.encode('ascii'))
+    # return False
+
     message = client.recv(4).decode('ascii')
-    print("MENSAGEM: " + message)
-    if message != "IDRQ": return True
     ID = GUIID
     client.send(ID.encode('ascii'))
+    print("MENSAGEM: " + message)
+    message = client.recv(4).decode('ascii')
+    if message != "IDRQ": return True
     return False
 
 def createGame(GUINick):
@@ -192,11 +206,15 @@ def createGame(GUINick):
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
+    return ID
+
 def waitingRoom():
     print("WAINTING FOR PLAYER")
     message = client.recv(5).decode('ascii')
     print("MENSAGEM: " + message)
-    if message == 'START': return True
+    if message == 'START': 
+        event.set()
+        return True
     return False
 
 # def decide():

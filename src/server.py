@@ -186,8 +186,11 @@ def joinRoom(client, address):
         ID = client.recv(8).decode('ascii')
         print("ID RECV: " + ID)
         if next((sala for sala in salas if sala['ID'] == ID), None) != None : 
+            # Verificar se a sala encontrada ja tem o jogador1 ou não
+            # se tiver retornar IDRQ  
             client.send('IDOK'.encode('ascii'))
             break
+        client.send('IDRQ'.encode('ascii'))
 
     salaCompleta = {}
     for sala in salas:
@@ -219,6 +222,7 @@ def createRoom(client, address):
 
     print("\nSALA CRIADA")
     [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
+
 
 def decide():
     while True:
