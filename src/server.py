@@ -177,15 +177,17 @@ def handle(sala):
 def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
 
+    client.send('NICK'.encode('ascii'))
+    nickname = client.recv(1024).decode('ascii')
+    print("NICK RECV: " + nickname)
+    
     while True:
         client.send('IDRQ'.encode('ascii'))
         ID = client.recv(8).decode('ascii')
         print("ID RECV: " + ID)
-        if next((sala for sala in salas if sala['ID'] == ID), None) != None : break
-
-    client.send('NICK'.encode('ascii'))
-    nickname = client.recv(1024).decode('ascii')
-    print("NICK RECV: " + nickname)
+        if next((sala for sala in salas if sala['ID'] == ID), None) != None : 
+            client.send('IDOK'.encode('ascii'))
+            break
 
     salaCompleta = {}
     for sala in salas:

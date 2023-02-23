@@ -153,29 +153,30 @@ def connectToServer(ip, port):
         return False
     return True
     
-def joinGame():
-    if connectToServer('127.0.0.1', 55549) == False:
-        return 'Server is not running'
+def joinGame(GUINick):
+    # if connectToServer('127.0.0.1', 55549) == False:
+    #     return 'Server is not running'
 
     client.send("JOIN".encode('ascii'))
     print("JOIN")
 
-    while True:
-        message = client.recv(4).decode('ascii')
-        print("MENSAGEM: " + message)
-        if message != "IDRQ": break
-        ID = input("Input ID: ")
-        client.send(ID.encode('ascii'))
-
-    nickname = input("Input NICK: ")
+    message = client.recv(4).decode('ascii')
+    nickname = GUINick
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
-    jogar()
 
-def createGame():
-    if connectToServer('127.0.0.1', 55549) == False:
-        return 'Server is not running'
+def sendID(GUIID):
+    message = client.recv(4).decode('ascii')
+    print("MENSAGEM: " + message)
+    if message != "IDRQ": return True
+    ID = GUIID
+    client.send(ID.encode('ascii'))
+    return False
+
+def createGame(GUINick):
+    # if connectToServer('127.0.0.1', 55549) == False:
+    #     return 'Server is not running'
         
     client.send("CREATE".encode('ascii'))
     print("CREATE")
@@ -184,23 +185,26 @@ def createGame():
     ID = message
     print("MENSAGEM: " + ID)
 
-    nickname = input("Input NICK: ")
+    # nickname = input("Input NICK: ")
+    nickname = GUINick
     message = client.recv(4).decode('ascii')
     print("MENSAGEM: " + message)
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
 
+def waitingRoom():
     print("WAINTING FOR PLAYER")
     message = client.recv(5).decode('ascii')
     print("MENSAGEM: " + message)
-    if message == 'START': jogar()
+    if message == 'START': return True
+    return False
 
-def decide():
-    escolha = input("Criar(1) ou Entrar(2) : "); print()
+# def decide():
+#     escolha = input("Criar(1) ou Entrar(2) : "); print()
 
-    if escolha == "1":
-        createGame()    
-    elif escolha == "2":
-        joinGame()
+#     if escolha == "1":
+#         createGame()    
+#     elif escolha == "2":
+#         joinGame()
 
-decide()
+# decide()
