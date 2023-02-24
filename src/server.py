@@ -65,6 +65,7 @@ def printBoard(sala):
 def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador1.send(mensagem1.encode('ascii'))
     jogador2.send(mensagem2.encode('ascii'))
+    jogador2.send(mensagem2.encode('ascii'))
     jogador1.send(str(movimento).encode('ascii'))
     jogador2.send(str(movimento).encode('ascii'))
     

@@ -42,14 +42,26 @@ def recvGameState(simbolo):
     linha = int(movimento // 10) - 1
     coluna = int(movimento % 10) - 1
     board[linha][coluna] = simbolos[simbolo]
+    
+    returno = -1
+    if movimento == 11: returno = 0 
+    if movimento == 21: returno = 1 
+    if movimento == 31: returno = 2 
+    if movimento == 21: returno = 3 
+    if movimento == 22: returno = 4 
+    if movimento == 23: returno = 5 
+    if movimento == 31: returno = 6 
+    if movimento == 32: returno = 7 
+    if movimento == 33: returno = 8 
+    return movimento
 
     print("MOVIMENTO: " + str(movimento))
 
 def endGameDecide(response):
     if response == True:
-        continuar = CNT
+        continuar = 'CNT'
     else:
-        continuar = END
+        continuar = 'END'
     client.send(continuar.encode('ascii'))
 
     if continuar == "END":
@@ -105,71 +117,6 @@ def waitResponse(event):
     message = client.recv(3).decode('ascii')
     event.set()
     return message
-
-def jogar():
-    print("\nJOGANDO")
-    movimento = ""
-
-    getSimbolo()
-
-    printBoard(); print()
-
-    while True:
-        print("---------------------------------------------------")
-
-        # ---------------------------------------------------------------
-        if continuar() == False : break
-        # ---------------------------------------------------------------
-
-        message = getTurn()
-        
-        if message == 'PLAY':
-
-            while True:
-                movimento = input("Digite o Movimento: ")
-                client.send(movimento.encode('ascii'))
-                message = client.recv(3).decode('ascii'); print("MENSAGEM: " + message)
-                if message != "INV": break
-
-            # message = client.recv(5).decode('ascii')
-            if message == "WIN":
-                print("WIN")
-                recvGameState(simbolo)
-                printBoard()
-
-            elif message == "TIE":
-                print("TIE")
-                recvGameState(simbolo)
-                printBoard()
-
-            elif message == "VAL":
-                print("VAL")
-                recvGameState(simbolo)
-                printBoard()
-            
-            if (message == "WIN" or message == "TIE") and endGameDecide():
-                break
-                
-        elif message == "WAIT":
-            message = waitResponse()
-
-            if message == "DEF":
-                print("DEF")
-                recvGameState(1-simbolo)
-                printBoard()
-
-            elif message == "TIE":
-                print("TIE")
-                recvGameState(1-simbolo)
-                printBoard()
-
-            elif message == "VAL":
-                print("VAL")
-                recvGameState(1-simbolo)
-                printBoard()
-            
-            if (message == "DEF" or message == "TIE") and endGameDecide():
-                break
 
 def connectToServer(ip, port):
     try:
