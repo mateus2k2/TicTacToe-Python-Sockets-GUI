@@ -4,7 +4,7 @@ import random
 
 # Connection Data
 host = '127.0.0.1'
-port = 55549
+port = 55599
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -62,9 +62,9 @@ def printBoard(sala):
         print()
     print("-" * 14)
 
-def sendGameState(jogador1, jogador2,  mensagem1, mensage2, movimento):
+def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador1.send(mensagem1.encode('ascii'))
-    jogador2.send(mensage2.encode('ascii'))
+    jogador2.send(mensagem2.encode('ascii'))
     jogador1.send(str(movimento).encode('ascii'))
     jogador2.send(str(movimento).encode('ascii'))
     
@@ -100,6 +100,9 @@ def handle(sala):
 
         continuar1 = sala['jogador' + str(jogando)].recv(3).decode('ascii')
         continuar2 = sala['jogador' + str(oponente)].recv(3).decode('ascii')
+
+        print("CONTINUAR1: " + continuar1)
+        print("CONTINUAR2: " + continuar2)
 
         if continuar1 == "CNT" and continuar2 == "CNT":  
             sala['jogador' + str(jogando)].send('CNT'.encode('ascii'))

@@ -1,10 +1,7 @@
 import socket
-import threading
-
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-event = threading.Event()
 
 # inicializa o jogo
 ID = ""
@@ -16,9 +13,6 @@ board = [['', 'O', 'X'],
 
 # vetor auxiliar para determinar o simbolo do jogador
 simbolos = ['X', 'O']
-
-def getEvent():
-    return event
 
 def printBoard():
     for i in range(3):
@@ -51,8 +45,11 @@ def recvGameState(simbolo):
 
     print("MOVIMENTO: " + str(movimento))
 
-def endGameDecide():
-    continuar = input("Escolha CNT ou END: ")
+def endGameDecide(response):
+    if response == True:
+        continuar = CNT
+    else:
+        continuar = END
     client.send(continuar.encode('ascii'))
 
     if continuar == "END":
@@ -68,12 +65,52 @@ def endGameDecide():
         resetGame()
         return False
 
+def getSimbolo():
+    simbolo = int(client.recv(1).decode('ascii'))
+    print("SIMBOLO: " + simbolos[simbolo]); print()
+    return simbolo
+
+def continuar():
+    continuar = "CNT" #input("Escolha CNT ou END: ")
+    print("CONTINUAR: " + continuar)
+    client.send(continuar.encode('ascii'))
+
+    if continuar == "END":
+        print("FIM JOGO")
+        endGame()
+        return False
+
+    print("ESPERANDO RESPOSTA SERVER")
+    continuar = client.recv(3).decode('ascii')
+
+    if continuar == "END":
+        print("OUTRO JOGADOR DESISTIU")
+        endGame()
+        return False
+
+    print("CNT")
+    return True
+
+def getTurn():
+    message = client.recv(4).decode('ascii')
+    print("MENSAGEM: " + message)
+    return message
+
+def sendMove(movimentoGUI):
+    client.send(movimentoGUI.encode('ascii'))
+    message = client.recv(3).decode('ascii'); print("MENSAGEM: " + message)
+    return message
+
+def waitResponse(event):
+    message = client.recv(3).decode('ascii')
+    event.set()
+    return message
+
 def jogar():
     print("\nJOGANDO")
     movimento = ""
 
-    simbolo = int(client.recv(1).decode('ascii'))
-    print("SIMBOLO: " + simbolos[simbolo]); print()
+    getSimbolo()
 
     printBoard(); print()
 
@@ -81,27 +118,10 @@ def jogar():
         print("---------------------------------------------------")
 
         # ---------------------------------------------------------------
-        continuar = "CNT" #input("Escolha CNT ou END: ")
-        client.send(continuar.encode('ascii'))
-
-        if continuar == "END":
-            print("FIM JOGO")
-            endGame()
-            break
-
-        print("ESPERANDO RESPOSTA SERVER")
-        continuar = client.recv(3).decode('ascii')
-
-        if continuar == "END":
-            print("OUTRO JOGADOR DESISTIU")
-            endGame()
-            break
-
-        print("CNT")
+        if continuar() == False : break
         # ---------------------------------------------------------------
 
-        message = client.recv(4).decode('ascii')
-        print("MENSAGEM: " + message)
+        message = getTurn()
         
         if message == 'PLAY':
 
@@ -131,7 +151,7 @@ def jogar():
                 break
                 
         elif message == "WAIT":
-            message = client.recv(3).decode('ascii')
+            message = waitResponse()
 
             if message == "DEF":
                 print("DEF")
@@ -208,7 +228,7 @@ def createGame(GUINick):
 
     return ID
 
-def waitingRoom():
+def waitingRoom(event):
     print("WAINTING FOR PLAYER")
     message = client.recv(5).decode('ascii')
     print("MENSAGEM: " + message)
@@ -217,12 +237,3 @@ def waitingRoom():
         return True
     return False
 
-# def decide():
-#     escolha = input("Criar(1) ou Entrar(2) : "); print()
-
-#     if escolha == "1":
-#         createGame()    
-#     elif escolha == "2":
-#         joinGame()
-
-# decide()

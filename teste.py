@@ -1,135 +1,45 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox
 
+class TicTacToe:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Tic Tac Toe")
+        self.current_player = "X"
+        self.board = ["", "", "", "", "", "", "", "", ""]
+        self.buttons = []
 
-LARGEFONT =("Verdana", 35)
+        for i in range(9):
+            button = tk.Button(self.master, width=10, height=5, command=lambda i=i: self.clicked(i))
+            button.grid(row=i//3, column=i%3)
+            self.buttons.append(button)
 
-class tkinterApp(tk.Tk):
-	
-	# __init__ function for class tkinterApp
-	def __init__(self, *args, **kwargs):
-		
-		# __init__ function for class Tk
-		tk.Tk.__init__(self, *args, **kwargs)
-		
-		# creating a container
-		container = tk.Frame(self)
-		container.pack(side = "top", fill = "both", expand = True)
+    def clicked(self, i):
+        if self.board[i] == "":
+            self.board[i] = self.current_player
+            self.buttons[i].config(text=self.current_player)
+            if self.check_winner():
+                messagebox.showinfo("Tic Tac Toe", f"{self.current_player} wins!")
+                self.reset_game()
+            elif "" not in self.board:
+                messagebox.showinfo("Tic Tac Toe", "It's a tie!")
+                self.reset_game()
+            else:
+                self.current_player = "O" if self.current_player == "X" else "X"
 
-		container.grid_rowconfigure(0, weight = 1)
-		container.grid_columnconfigure(0, weight = 1)
+    def check_winner(self):
+        win_patterns = ((0, 1, 2), (3, 4, 5), (6, 7, 8), (0, 3, 6), (1, 4, 7), (2, 5, 8), (0, 4, 8), (2, 4, 6))
+        for pattern in win_patterns:
+            if self.board[pattern[0]] == self.board[pattern[1]] == self.board[pattern[2]] != "":
+                return True
+        return False
 
-		# initializing frames to an empty array
-		self.frames = {}
+    def reset_game(self):
+        self.current_player = "X"
+        self.board = ["", "", "", "", "", "", "", "", ""]
+        for button in self.buttons:
+            button.config(text="")
 
-		# iterating through a tuple consisting
-		# of the different page layouts
-		for F in (StartPage, Page1, Page2):
-
-			frame = F(container, self)
-
-			# initializing frame of that object from
-			# startpage, page1, page2 respectively with
-			# for loop
-			self.frames[F] = frame
-
-			frame.grid(row = 0, column = 0, sticky ="nsew")
-
-		self.show_frame(StartPage)
-
-	# to display the current frame passed as
-	# parameter
-	def show_frame(self, cont):
-		frame = self.frames[cont]
-		frame.tkraise()
-
-# first window frame startpage
-
-class StartPage(tk.Frame):
-	def __init__(self, parent, controller):
-		tk.Frame.__init__(self, parent)
-		
-		# label of frame Layout 2
-		label = ttk.Label(self, text ="Startpage", font = LARGEFONT)
-		
-		# putting the grid in its place by using
-		# grid
-		label.grid(row = 0, column = 4, padx = 10, pady = 10)
-
-		button1 = ttk.Button(self, text ="Page 1",
-		command = lambda : controller.show_frame(Page1))
-	
-		# putting the button in its place by
-		# using grid
-		button1.grid(row = 1, column = 1, padx = 10, pady = 10)
-
-		## button to show frame 2 with text layout2
-		button2 = ttk.Button(self, text ="Page 2",
-		command = lambda : controller.show_frame(Page2))
-	
-		# putting the button in its place by
-		# using grid
-		button2.grid(row = 2, column = 1, padx = 10, pady = 10)
-
-		
-
-
-# second window frame page1
-class Page1(tk.Frame):
-	
-	def __init__(self, parent, controller):
-		
-		tk.Frame.__init__(self, parent)
-		label = ttk.Label(self, text ="Page 1", font = LARGEFONT)
-		label.grid(row = 0, column = 4, padx = 10, pady = 10)
-
-		# button to show frame 2 with text
-		# layout2
-		button1 = ttk.Button(self, text ="StartPage",
-							command = lambda : controller.show_frame(StartPage))
-	
-		# putting the button in its place
-		# by using grid
-		button1.grid(row = 1, column = 1, padx = 10, pady = 10)
-
-		# button to show frame 2 with text
-		# layout2
-		button2 = ttk.Button(self, text ="Page 2",
-							command = lambda : controller.show_frame(Page2))
-	
-		# putting the button in its place by
-		# using grid
-		button2.grid(row = 2, column = 1, padx = 10, pady = 10)
-
-
-
-
-# third window frame page2
-class Page2(tk.Frame):
-	def __init__(self, parent, controller):
-		tk.Frame.__init__(self, parent)
-		label = ttk.Label(self, text ="Page 2", font = LARGEFONT)
-		label.grid(row = 0, column = 4, padx = 10, pady = 10)
-
-		# button to show frame 2 with text
-		# layout2
-		button1 = ttk.Button(self, text ="Page 1",
-							command = lambda : controller.show_frame(Page1))
-	
-		# putting the button in its place by
-		# using grid
-		button1.grid(row = 1, column = 1, padx = 10, pady = 10)
-
-		# button to show frame 3 with text
-		# layout3
-		button2 = ttk.Button(self, text ="Startpage",
-							command = lambda : controller.show_frame(StartPage))
-	
-		# putting the button in its place by
-		# using grid
-		button2.grid(row = 2, column = 1, padx = 10, pady = 10)
-
-
-# Driver Code
-app = tkinterApp()
-app.mainloop()
+root = tk.Tk()
+game = TicTacToe(root)
+root.mainloop()
