@@ -10,6 +10,9 @@ nicknameOpodente = ""
 board = [['', 'O', 'X'],
          ['X', 'O', 'X'],
          ['O', 'X', 'O'],]
+# board = [['', '', ''],
+#          ['', '', ''],
+#          ['', '', ''],]
 
 # vetor auxiliar para determinar o simbolo do jogador
 simbolos = ['X', 'O']
@@ -45,17 +48,18 @@ def recvGameState(simbolo):
     
     returno = -1
     if movimento == 11: returno = 0 
-    if movimento == 21: returno = 1 
-    if movimento == 31: returno = 2 
+    if movimento == 12: returno = 1 
+    if movimento == 13: returno = 2 
     if movimento == 21: returno = 3 
     if movimento == 22: returno = 4 
     if movimento == 23: returno = 5 
     if movimento == 31: returno = 6 
     if movimento == 32: returno = 7 
     if movimento == 33: returno = 8 
-    return movimento
 
     print("MOVIMENTO: " + str(movimento))
+
+    return returno
 
 def endGameDecide(response):
     if response == True:

@@ -4,3 +4,15 @@
 cd src/GUI/
 python GUIMain.py 
 python src/server.py
+
+
+
+1 -------------
+cima criou
+boixo entrou
+baixo comecou
+
+1 -------------
+cima criou
+boixo entrou
+cima comecou

@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import ImageTk, Image
 import pygame
+import time
 
 import threading
 import sys
@@ -10,6 +11,8 @@ import os
 client_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(client_dir)
 from client import *
+
+simbolos = ['X', 'O']
 
 class ClientGUI(Tk):
     def __init__(self):
@@ -223,8 +226,12 @@ class ClientGUI(Tk):
         self.backButton = Button(self.SendID, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.SendIDPage))
         self.SendID.create_window(450, 500, window=self.backButton)
 
-    def resetGameGUI():
-        pass
+# comenet
+    def resetGameGUI(self):
+        for button in self.buttons:
+            button.config(text= '', state=DISABLED)
+
+        self.buttonsDisable = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # comenet
     def play(self, flag):
@@ -232,7 +239,7 @@ class ClientGUI(Tk):
             self.SendIDPage.destroy()
         elif flag == 2:
             self.waitingRoomPage.destroy()
-            
+
         # ---------------------------------------------------------------------------------------------------
 
         self.playPage = Frame(self)
@@ -245,6 +252,8 @@ class ClientGUI(Tk):
 
         self.buttons = []
         self.buttonsDisable = [0, 1, 1, 1, 1, 1, 1, 1, 1]
+        # self.buttonsDisable = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
         for i in range(9):
             button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
             button.grid(row=i // 3, column=i % 3)
@@ -252,8 +261,8 @@ class ClientGUI(Tk):
             
         self.play = self.createCanvas(self.playPage)
         self.play.create_image(0, 0, image=self.image, anchor=NW)
-        self.play.create_text(450, 100, text="Jogando", font=("Impact", 40), fill="white")
-
+        self.text_item = self.play.create_text(450, 100, text="Jogando", font=("Impact", 40), fill="white")
+        
         # Center the playPage frame with the grid of buttons and the title
         self.playPage.place(relx=0.5, rely=0.5, anchor=CENTER)
 
@@ -271,11 +280,15 @@ class ClientGUI(Tk):
         self.button_pressed = BooleanVar(value=False)
 
         # ---------------------------------------------------------------------------------------------------
-
         while self.playing:
             continuar()
             self.turn = getTurn()
             printBoard(); print()
+
+            self.play.itemconfig(self.text_item, text=self.turn)
+            print("self.turn " + self.turn)
+
+            time.sleep(2)
 
             if self.turn == 'PLAY': 
                 var = 0
@@ -288,6 +301,7 @@ class ClientGUI(Tk):
 
             elif self.turn == 'WAIT':
                 self.turnWait()
+
 # comenet
     def turnWait(self):
         event = threading.Event()
@@ -303,7 +317,7 @@ class ClientGUI(Tk):
             print("DEF")
             var = recvGameState(1-self.simboloInt)
             self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=self.simbolo)
+            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
             messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
             printBoard()
 
@@ -311,7 +325,7 @@ class ClientGUI(Tk):
             print("TIE")
             var = recvGameState(1-self.simboloInt)
             self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=self.simbolo)
+            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
             messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
             printBoard()
 
@@ -319,13 +333,18 @@ class ClientGUI(Tk):
             print("VAL")
             var = recvGameState(1-self.simboloInt)
             self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=self.simbolo)
+            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
             printBoard()
         
         if (message == "DEF" or message == "TIE"):
             response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
             self.playing = not (endGameDecide(response))
-            resetGameGUI()
+            print("self.playing " + str(self.playing))
+
+            if(self.playing == True):
+                self.resetGameGUI()
+            else:
+                print("Fim Game GUI")
 
 # comenet
     def turnPlay(self, i):
@@ -365,7 +384,12 @@ class ClientGUI(Tk):
         if (message == "WIN" or message == "TIE"):
             response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
             self.playing = not (endGameDecide(response))
-            resetGameGUI()
+            print("self.playing " + str(self.playing))
+
+            if(self.playing == True):
+                self.resetGameGUI()
+            else:
+                print("Fim Game GUI")
 
         self.button_pressed.set(True)
         
