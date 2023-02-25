@@ -234,7 +234,7 @@ class ClientGUI(Tk):
         self.buttonsDisable = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 # comenet
-    def play(self, flag):
+    def createPlayFrame(self, flag):
         if flag == 1:
             self.SendIDPage.destroy()
         elif flag == 2:
@@ -265,6 +265,10 @@ class ClientGUI(Tk):
         
         # Center the playPage frame with the grid of buttons and the title
         self.playPage.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+# comenet
+    def play(self, flag):
+        self.createPlayFrame(flag)
 
         # ---------------------------------------------------------------------------------------------------
         

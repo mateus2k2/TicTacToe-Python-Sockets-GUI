@@ -70,6 +70,13 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador2.send(str(movimento).encode('ascii'))
     
 def handle(sala):
+    try:
+        play(sala)
+    except:
+        print("Client Saiu")   
+        endGame(sala)
+
+def play(sala):
     # ---------------------------------------------------------------
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
@@ -181,7 +188,7 @@ def handle(sala):
         # Troca de turno
 
         jogando = 1 - jogando
-        oponente = 1 - oponente        
+        oponente = 1 - oponente     
 
 def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
@@ -194,9 +201,8 @@ def joinRoom(client, address):
         client.send('IDRQ'.encode('ascii'))
         ID = client.recv(8).decode('ascii')
         print("ID RECV: " + ID)
-        if next((sala for sala in salas if sala['ID'] == ID), None) != None : 
-            # Verificar se a sala encontrada ja tem o jogador1 ou não
-            # se tiver retornar IDRQ  
+        salaTmp = next((sala for sala in salas if sala['ID'] == ID), None)
+        if salaTmp != None and (not ('jogador1' in salaTmp)): 
             client.send('IDOK'.encode('ascii'))
             break
         client.send('IDRQ'.encode('ascii'))
@@ -231,7 +237,6 @@ def createRoom(client, address):
 
     print("\nSALA CRIADA")
     [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
-
 
 def decide():
     while True:
