@@ -90,8 +90,8 @@ def getSimbolo():
     print("SIMBOLO: " + simbolos[simbolo]); print()
     return simbolo
 
-def continuar():
-    continuar = "CNT" #input("Escolha CNT ou END: ")
+def continuar(continuar):
+    # continuar = "CNT" #input("Escolha CNT ou END: ")
     client.send(continuar.encode('ascii'))
 
     if continuar == "END":
@@ -120,8 +120,9 @@ def sendMove(movimentoGUI):
     message = client.recv(3).decode('ascii'); print("MENSAGEM: " + message)
     return message
 
-def waitResponse(event):
+def waitResponse(event, fileResultado):
     message = client.recv(3).decode('ascii')
+    fileResultado.put(message)
     event.set()
     return message
 

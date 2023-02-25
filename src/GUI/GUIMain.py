@@ -48,6 +48,28 @@ class ClientGUI(Tk):
         click = pygame.mixer.Sound("Sounds/click.wav")
         click.play()
 
+#comment
+    def load_gif_frames(self):
+        try:
+            while True:
+                self.loadingFrames.append(ImageTk.PhotoImage(self.loading.copy()))
+                self.loading.seek(len(self.loadingFrames))
+        except EOFError:
+            pass
+
+#comment
+    def play_gif(self, canvas, frame_index=0):
+        # Display the current frame of the GIF image
+        canvas.create_image(800, 500, anchor='nw', image=self.loadingFrames[frame_index])
+
+        # Go to the next frame of the GIF image
+        next_frame_index = (frame_index + 1) % len(self.loadingFrames)
+
+        # Check if the thread is still running
+        if not (self.eventThread.is_set()):
+            # Schedule the next frame of the GIF image to be displayed
+            canvas.after(3, self.play_gif, canvas, next_frame_index)
+            
 # Implementação do botão voltar -> destrói a pagina atual e cria uma nova pagina de Menu
     def backToMenu(self, page):
         self.clickSound()
@@ -141,21 +163,29 @@ class ClientGUI(Tk):
         self.clickSound()
 
         self.createGamePage.destroy()
+
         self.waitingRoomPage = Frame(self)
         self.waitingRoomPage.pack()
         self.waitingRoomPage.pack_propagate(False)
         self.waitingRoomPage.configure(width=900, height=600)
+
         self.waitingRoom = self.createCanvas(self.waitingRoomPage)
         self.waitingRoom.create_image(0, 0, image=self.image, anchor=NW)
         self.waitingRoom.create_text(450, 100, text="Waiting Room ID: ", font=("Impact", 80), fill = "white")
         self.waitingRoom.create_text(450, 250, text= str(ID), font=("Impact", 80), fill = "white")
 
-        event = threading.Event()
-        waitingRoomThread = threading.Thread(target=waitingRoom, args=(event,))    
+        self.loading = Image.open("images/loading.gif")
+        self.loadingFrames = []
+        self.load_gif_frames()
+
+        self.eventThread = threading.Event()
+        waitingRoomThread = threading.Thread(target=waitingRoom, args=(self.eventThread,))    
         waitingRoomThread.start()
         
-        while not event.wait(1):
+        while not self.eventThread.is_set():
+            self.play_gif(self.waitingRoom)
             self.update()
+
 
         print("Jogar")
         self.play(2)
@@ -289,28 +319,33 @@ class ClientGUI(Tk):
         self.button_pressed = BooleanVar(value=False)
 
         # ---------------------------------------------------------------------------------------------------
-        while self.playing:
-            continuar()
-            self.turn = getTurn()
-            printBoard(); print()
+        try:
+            while self.playing:
+                continuar("CNT") # verificar se o
+                self.turn = getTurn()
+                printBoard(); print()
 
-            self.play.itemconfig(self.text_item, text=self.turn)
+                self.play.itemconfig(self.text_item, text=self.turn)
 
-            time.sleep(2)
+                time.sleep(2)
 
-            print("TURNO: " + self.turn)
+                print("TURNO: " + self.turn)
 
-            if self.turn == 'PLAY': 
-                var = 0
-                for button in self.buttons:
-                    if(self.buttonsDisable[var] == 0):
-                        button.config(state=NORMAL)
-                    var += 1
+                if self.turn == 'PLAY': 
+                    var = 0
+                    for button in self.buttons:
+                        if(self.buttonsDisable[var] == 0):
+                            button.config(state=NORMAL)
+                        var += 1
 
-                self.wait_variable(self.button_pressed)
+                    self.wait_variable(self.button_pressed)
 
-            elif self.turn == 'WAIT':
-                self.turnWait()
+                elif self.turn == 'WAIT':
+                    self.turnWait()
+
+        except:
+            print("ERRO")
+            #encerrar o jogo e mandar aviso pro outro cliente
 
 # comenet
     def endGameGUI(self):
@@ -335,14 +370,15 @@ class ClientGUI(Tk):
 
 # comenet
     def turnWait(self):
+        fileResultado = Queue()
         event = threading.Event()
-        waitingRoomThread = threading.Thread(target=waitResponse, args=(event,))    
+        waitingRoomThread = threading.Thread(target=waitResponse, args=(event, fileResultado,))    
         waitingRoomThread.start()
         
         while not event.wait(1):
             self.update()
 
-        message = waitResponse(event)
+        message = fileResultado.get()
 
         if message == "DEF":
             print("DEF")
