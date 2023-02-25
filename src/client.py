@@ -88,7 +88,6 @@ def getSimbolo():
 
 def continuar():
     continuar = "CNT" #input("Escolha CNT ou END: ")
-    print("CONTINUAR: " + continuar)
     client.send(continuar.encode('ascii'))
 
     if continuar == "END":
@@ -104,7 +103,7 @@ def continuar():
         endGame()
         return False
 
-    print("CNT")
+    print("CONTINUAR: " + continuar)
     return True
 
 def getTurn():

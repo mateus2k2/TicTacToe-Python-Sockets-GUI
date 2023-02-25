@@ -245,26 +245,29 @@ class ClientGUI(Tk):
         self.playPage = Frame(self)
         self.playPage.pack(fill=BOTH, expand=True)
         self.playPage.pack_propagate(False)
-        self.playPage.configure(width=900, height=600)
+        self.playPage.configure(width=900, height=900)
 
-        buttonFrame = Frame(self.playPage, width=30, height=15)
+        self.play = self.createCanvas(self.playPage)
+        self.play.pack(fill=BOTH, expand=True)
+        self.play.pack_propagate(False)
+        self.play.create_image(0, 0, image=self.image, anchor=NW)
+        self.text_item = self.play.create_text(150, 150, text="Jogando", font=("Impact", 20), fill="white")
+        self.play.lift(self.text_item) # bring the text item to the front
+
+        # Create a frame inside the play canvas to hold the buttons
+        buttonFrame = Frame(self.play, width=30, height=15)
         buttonFrame.pack(side=TOP, pady=10)
 
         self.buttons = []
         self.buttonsDisable = [0, 1, 1, 1, 1, 1, 1, 1, 1]
-        # self.buttonsDisable = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
         for i in range(9):
             button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
-            
-        self.play = self.createCanvas(self.playPage)
-        self.play.create_image(0, 0, image=self.image, anchor=NW)
-        self.text_item = self.play.create_text(450, 100, text="Jogando", font=("Impact", 40), fill="white")
-        
-        # Center the playPage frame with the grid of buttons and the title
-        self.playPage.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+        # Position the playPage frame anywhere on the screen
+        self.playPage.place(x=0, y=0)
 
 # comenet
     def play(self, flag):
@@ -290,9 +293,10 @@ class ClientGUI(Tk):
             printBoard(); print()
 
             self.play.itemconfig(self.text_item, text=self.turn)
-            print("self.turn " + self.turn)
 
             time.sleep(2)
+
+            print("TURNO: " + self.turn)
 
             if self.turn == 'PLAY': 
                 var = 0
@@ -343,7 +347,6 @@ class ClientGUI(Tk):
         if (message == "DEF" or message == "TIE"):
             response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
             self.playing = not (endGameDecide(response))
-            print("self.playing " + str(self.playing))
 
             if(self.playing == True):
                 self.resetGameGUI()
@@ -388,7 +391,6 @@ class ClientGUI(Tk):
         if (message == "WIN" or message == "TIE"):
             response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
             self.playing = not (endGameDecide(response))
-            print("self.playing " + str(self.playing))
 
             if(self.playing == True):
                 self.resetGameGUI()
