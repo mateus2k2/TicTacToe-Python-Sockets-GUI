@@ -61,7 +61,7 @@ def recvGameState(simbolo):
 
     return returno
 
-def endGameDecide(response):
+def endGameDecide(response, event, fileResultado):
     if response == True:
         continuar = 'CNT'
     else:
@@ -71,6 +71,8 @@ def endGameDecide(response):
     if continuar == "END":
         print("FIM JOGO")
         endGame()
+        event.set()
+        fileResultado.put(True)
         return True
     
     print("ESPERANDO RESPOSTA SERVER")
@@ -79,6 +81,8 @@ def endGameDecide(response):
     if continuar == "CNT":
         print("RESET GAME")
         resetGame()
+        event.set()
+        fileResultado.put(False)
         return False
 
 def getSimbolo():

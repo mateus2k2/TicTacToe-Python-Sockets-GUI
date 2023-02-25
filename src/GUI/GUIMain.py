@@ -2,9 +2,11 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import ImageTk, Image
 import pygame
-import time
 
+import time
+from queue import Queue
 import threading
+
 import sys
 import os
 
@@ -311,6 +313,27 @@ class ClientGUI(Tk):
                 self.turnWait()
 
 # comenet
+    def endGameGUI(self):
+        response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
+
+        event = threading.Event()
+        fileResultado = Queue()
+        endGameDecideThread = threading.Thread(target=endGameDecide, args=(response, event, fileResultado))
+        endGameDecideThread.start()
+
+        while not event.wait(1):
+            self.update()
+        
+
+        self.playing = not fileResultado.get()
+
+        if(self.playing == True):
+            print("Reset GUI")
+            self.resetGameGUI()
+        else:
+            print("Fim Game GUI")
+
+# comenet
     def turnWait(self):
         event = threading.Event()
         waitingRoomThread = threading.Thread(target=waitResponse, args=(event,))    
@@ -345,13 +368,7 @@ class ClientGUI(Tk):
             printBoard()
         
         if (message == "DEF" or message == "TIE"):
-            response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
-            self.playing = not (endGameDecide(response))
-
-            if(self.playing == True):
-                self.resetGameGUI()
-            else:
-                print("Fim Game GUI")
+            self.endGameGUI()
 
 # comenet
     def turnPlay(self, i):
@@ -389,13 +406,7 @@ class ClientGUI(Tk):
             printBoard()
         
         if (message == "WIN" or message == "TIE"):
-            response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
-            self.playing = not (endGameDecide(response))
-
-            if(self.playing == True):
-                self.resetGameGUI()
-            else:
-                print("Fim Game GUI")
+            self.endGameGUI()
 
         self.button_pressed.set(True)
         
