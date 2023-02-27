@@ -111,23 +111,7 @@ def play(sala):
     sala['jogador' + str(oponente)].send("1".encode('ascii'))
     
     while True:
-        # ---------------------------------------------------------------
-        # Verificar se os dois jogadores querem continuar jogando
 
-        continuar1 = sala['jogador' + str(jogando)].recv(3).decode('ascii')
-        continuar2 = sala['jogador' + str(oponente)].recv(3).decode('ascii')
-
-        print("CONTINUAR1: " + continuar1)
-        print("CONTINUAR2: " + continuar2)
-
-        if continuar1 == "CNT" and continuar2 == "CNT":  
-            sala['jogador' + str(jogando)].send('CNT'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('CNT'.encode('ascii'))
-        elif continuar1 == "END" or continuar2 == "END":
-            sala['jogador' + str(jogando)].send('END'.encode('ascii'))
-            sala['jogador' + str(oponente)].send('END'.encode('ascii'))
-            endGame(sala)
-            break
         # ---------------------------------------------------------------
         # Envia Qual o turno de cada jogador
 

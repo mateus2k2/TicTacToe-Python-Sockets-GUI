@@ -26,8 +26,7 @@ class ClientGUI(Tk):
         self.play_music()
         self.createMenuFrame()
 
-    def create_images(self):
-        # self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600), Image.ANTIALIAS))
+    def createImages(self):
         self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600)))
 
     def createCanvas(self, master):
@@ -48,7 +47,7 @@ class ClientGUI(Tk):
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    def load_gif_frames(self):
+    def loadGifFrames(self):
         try:
             while True:
                 self.loadingFrames.append(ImageTk.PhotoImage(self.loading.copy()))
@@ -56,7 +55,7 @@ class ClientGUI(Tk):
         except EOFError:
             pass
 
-    def play_gif(self, canvas, frame_index=0):
+    def playGif(self, canvas, frame_index=0):
         # Display the current frame of the GIF image
         canvas.create_image(800, 500, anchor='nw', image=self.loadingFrames[frame_index])
 
@@ -66,7 +65,7 @@ class ClientGUI(Tk):
         # Check if the thread is still running
         if not (self.eventThread.is_set()):
             # Schedule the next frame of the GIF image to be displayed
-            canvas.after(3, self.play_gif, canvas, next_frame_index)
+            canvas.after(3, self.playGif, canvas, next_frame_index)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
             
@@ -104,7 +103,7 @@ class ClientGUI(Tk):
         self.menuFrame.pack_propagate(False)
         self.menuFrame.configure(width=900, height=600)
         self.menu = self.createCanvas(self.menuFrame)
-        self.create_images()
+        self.createImages()
         self.menu.create_image(0, 0, image=self.image, anchor=NW)
         self.MenuButtons()
 
@@ -147,7 +146,7 @@ class ClientGUI(Tk):
                 return 
 
             IDVar = createGame(nick) 
-            self.waiting_Room(IDVar)
+            self.waitingRoomGUI(IDVar)
 
         self.createGame.create_window(450, 250, window=self.gameNameEntry)
         self.createGameButton = Button(self.createGame, text="Criar Jogo", font=("Impact", 30), command=OkCallback)
@@ -157,7 +156,7 @@ class ClientGUI(Tk):
         
         self.createGame.create_window(450, 500, window=self.backButton)
 
-    def waiting_Room(self, ID):
+    def waitingRoomGUI(self, ID):
         self.clickSound()
 
         self.createGamePage.destroy()
@@ -174,14 +173,14 @@ class ClientGUI(Tk):
 
         self.loading = Image.open("images/loading.gif")
         self.loadingFrames = []
-        self.load_gif_frames()
+        self.loadGifFrames()
 
         self.eventThread = threading.Event()
         waitingRoomThread = threading.Thread(target=waitingRoom, args=(self.eventThread,))    
         waitingRoomThread.start()
         
         while not self.eventThread.is_set():
-            self.play_gif(self.waitingRoom)
+            self.playGif(self.waitingRoom)
             self.update()
 
 
@@ -217,14 +216,14 @@ class ClientGUI(Tk):
                 return 
 
             joinGame(nick)
-            self.send_ID()
+            self.sendIDGUI()
 
         self.joinGameButton = Button(self.joinGame, text="Entrar", font=("Impact", 30), command = OkCallback)
         self.joinGame.create_window(450, 400, window=self.joinGameButton)
         self.backButton = Button(self.joinGame, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.joinGamePage))
         self.joinGame.create_window(450, 500, window=self.backButton)
 
-    def send_ID(self): 
+    def sendIDGUI(self): 
         self.clickSound()
         self.joinGamePage.destroy()
         
@@ -302,15 +301,12 @@ class ClientGUI(Tk):
         # Position the playPage frame anywhere on the screen
         self.playPage.place(x=0, y=0)
 
-        self.backButton = Button(self.play, text="Voltar", font=("Impact", 30), command = self.quit)
+        self.backButton = Button(self.play, text="Sair", font=("Impact", 30), command = self.quit)
         self.play.create_window(450, 500, window=self.backButton)
 
     def quit(self):
-        # messagebox.showinfo("Erro", "Jogo Encerrado")
-        print("ERRO")
+        print("Quit Function")
         endGame()
-        # self.resetGameGUI()
-        # self.backToMenu(self.playPage)
         self.destroy()
         sys.exit()
 
@@ -319,14 +315,7 @@ class ClientGUI(Tk):
 
         # ---------------------------------------------------------------------------------------------------
         
-        self.simbolo = ""
         self.simboloInt = getSimbolo()
-        self.varContinuar = "CNT"
-
-        if(self.simboloInt == 0):
-            self.simbolo = "X"
-        else:
-            self.simbolo = "O"
 
         self.playing = True
         self.button_pressed = BooleanVar(value=False)
@@ -334,17 +323,12 @@ class ClientGUI(Tk):
         # ---------------------------------------------------------------------------------------------------
         try:
             while self.playing:
-                if continuar(self.varContinuar) == False: 
-                    endGame()
-                    self.resetGameGUI()
-                    self.backToMenu(self.playPage)
-
                 self.turn = getTurn()
                 printBoard(); print()
 
                 self.play.itemconfig(self.text_item, text=self.turn)
 
-                # time.sleep(2)
+                time.sleep(2)
 
                 print("TURNO: " + self.turn)
 
@@ -360,9 +344,12 @@ class ClientGUI(Tk):
                 elif self.turn == 'WAIT':
                     self.turnWait()
 
+                else:
+                    raise Exception
+
         except:
             self.quit()
-            #encerrar o jogo e mandar aviso pro outro cliente
+            self.playing = False
 
     def endGameGUI(self):
         response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
@@ -381,11 +368,11 @@ class ClientGUI(Tk):
             print("Reset GUI")
             self.resetGameGUI()
         else:
-            endGame()
             print("Fim Game GUI")
-            
-    def turnWait(self):
+            endGame()
+            self.quit()
 
+    def turnWait(self):
         try:
             fileResultado = Queue()
             event = threading.Event()
@@ -396,39 +383,41 @@ class ClientGUI(Tk):
                 self.update()
 
             message = fileResultado.get()
+
+            if message == "DEF":
+                print("DEF")
+                var = recvGameState(1-self.simboloInt)
+                self.buttonsDisable[var] = 1
+                self.buttons[var].config(text=simbolos[1 - self.simboloInt])
+                messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
+                printBoard()
+
+            elif message == "TIE":
+                print("TIE")
+                var = recvGameState(1-self.simboloInt)
+                self.buttonsDisable[var] = 1
+                self.buttons[var].config(text=simbolos[1 - self.simboloInt])
+                messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
+                printBoard()
+
+            elif message == "VAL":
+                print("VAL")
+                var = recvGameState(1-self.simboloInt)
+                self.buttonsDisable[var] = 1
+                self.buttons[var].config(text=simbolos[1 - self.simboloInt])
+                printBoard()
+            
+            elif message == "INV":
+                print("INV")
+                self.quit()
+            
+            if (message == "DEF" or message == "TIE"):
+                self.endGameGUI()
+
         except:
-            print("EXEPTION")
-
-        if message == "DEF":
-            print("DEF")
-            var = recvGameState(1-self.simboloInt)
-            self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
-            messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
-            printBoard()
-
-        elif message == "TIE":
-            print("TIE")
-            var = recvGameState(1-self.simboloInt)
-            self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
-            messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
-            printBoard()
-
-        elif message == "VAL":
-            print("VAL")
-            var = recvGameState(1-self.simboloInt)
-            self.buttonsDisable[var] = 1
-            self.buttons[var].config(text=simbolos[1 - self.simboloInt])
-            printBoard()
-        
-        elif message == "INV":
-            print("INV")
-            self.quit()
-        
-        if (message == "DEF" or message == "TIE"):
-            self.endGameGUI()
-        
+            print("Trun Wait Error")
+            self.playing = False
+            
     def turnPlay(self, i):
         
         if i == 0: movimento = "11"
@@ -441,7 +430,7 @@ class ClientGUI(Tk):
         if i == 7: movimento = "32"
         if i == 8: movimento = "33"
         
-        self.buttons[i].config(text=self.simbolo, state=DISABLED)
+        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
         self.buttonsDisable[i] = 1
         
         try:
@@ -480,3 +469,5 @@ class ClientGUI(Tk):
 if __name__ == "__main__":
     client = ClientGUI()
     client.mainloop()
+    sys.exit()
+

@@ -40,6 +40,8 @@ def endGame():
     board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
     client.close()
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def recvGameState(simbolo):
     movimento = int(client.recv(2).decode('ascii'))
     linha = int(movimento // 10) - 1
@@ -88,24 +90,6 @@ def getSimbolo():
     print("SIMBOLO: " + simbolos[simbolo]); print()
     return simbolo
 
-def continuar(continuar):
-    # continuar = "CNT" #input("Escolha CNT ou END: ")
-    client.send(continuar.encode('ascii'))
-
-    if continuar == "END":
-        print("FIM JOGO")
-        return False
-
-    print("ESPERANDO RESPOSTA SERVER")
-    continuar = client.recv(3).decode('ascii')
-
-    if continuar == "END":
-        print("OUTRO JOGADOR DESISTIU")
-        return False
-
-    print("CONTINUAR: " + continuar)
-    return True
-
 def getTurn():
     message = client.recv(4).decode('ascii')
     print("MENSAGEM: " + message)
@@ -117,10 +101,15 @@ def sendMove(movimentoGUI):
     return message
 
 def waitResponse(event, fileResultado):
-    message = client.recv(3).decode('ascii')
-    fileResultado.put(message)
-    event.set()
-    return message
+    try:
+        message = client.recv(3).decode('ascii')
+        fileResultado.put(message)
+        event.set()
+        return message
+    except:
+        print("ERROR")
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def connectToServer(ip, port):
     try:
@@ -129,7 +118,9 @@ def connectToServer(ip, port):
         print("Server is not running")
         return False
     return True
-    
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def joinGame(GUINick):
     # if connectToServer('127.0.0.1', 55549) == False:
     #     return 'Server is not running'
@@ -158,6 +149,8 @@ def sendID(GUIID):
     message = client.recv(4).decode('ascii')
     if message != "IDRQ": return True
     return False
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def createGame(GUINick):
     # if connectToServer('127.0.0.1', 55549) == False:
