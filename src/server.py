@@ -31,6 +31,8 @@ def checkWin(sala):
 def checkVelha(sala):
     return sala['jogadas'] == 9
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def resetGame(sala):
     sala['board'][0][0] = ''; sala['board'][0][1] = ''; sala['board'][0][2]  = '';
     sala['board'][1][0] = ''; sala['board'][1][1] = ''; sala['board'][1][2]  = '';
@@ -49,6 +51,8 @@ def endGame(sala):
     # deletar a sala do vetor de salas
     # del next((salaRet for salaRet in salas if salaRet['ID'] == sala['ID']), None)
     salas.remove(sala)
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def printBoard(sala):
     for i in range(3):
@@ -133,17 +137,15 @@ def play(sala):
         # ---------------------------------------------------------------
         # Recebe o movimento do jogador
 
-        while True:
-            movimento = int(sala['jogador' + str(jogando)].recv(2).decode('ascii'))
-            linha = int(movimento // 10) - 1
-            coluna = int(movimento % 10) - 1
+        movimento = int(sala['jogador' + str(jogando)].recv(2).decode('ascii'))
+        linha = int(movimento // 10) - 1
+        coluna = int(movimento % 10) - 1
 
-            if(sala['board'][linha][coluna] == ''):
-                sala['board'][linha][coluna] = simbolo[sala['simbJogador' + str(jogando)]]
-                sala['jogadas'] += 1
-                break
-            else:
-                sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
+        if(sala['board'][linha][coluna] == ''):
+            sala['board'][linha][coluna] = simbolo[sala['simbJogador' + str(jogando)]]
+            sala['jogadas'] += 1
+        else:
+            sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
         
         # ---------------------------------------------------------------
         # Verifica se o jogo acabou
@@ -188,6 +190,8 @@ def play(sala):
 
         jogando = 1 - jogando
         oponente = 1 - oponente     
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))

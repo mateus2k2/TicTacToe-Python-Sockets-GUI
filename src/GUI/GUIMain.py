@@ -26,29 +26,28 @@ class ClientGUI(Tk):
         self.play_music()
         self.createMenuFrame()
 
-# Abre a imagem da tela de fundo
     def create_images(self):
         # self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600), Image.ANTIALIAS))
         self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600)))
 
-# Cria e retorna um canvas para ser usado em cada tela
     def createCanvas(self, master):
         canvas = Canvas(master, width=900, height=600)
         canvas.pack()
         return canvas
 
-# Da play na musica logo quando a tela raiz é criada
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def play_music(self):
         self.music = pygame.mixer.Sound("Sounds/Music.wav")
         self.music.set_volume(0)
         self.music.play(-1)
 
-# Da play no som de clique
     def clickSound(self):
         click = pygame.mixer.Sound("Sounds/click.wav")
         click.play()
 
-#comment
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def load_gif_frames(self):
         try:
             while True:
@@ -57,7 +56,6 @@ class ClientGUI(Tk):
         except EOFError:
             pass
 
-#comment
     def play_gif(self, canvas, frame_index=0):
         # Display the current frame of the GIF image
         canvas.create_image(800, 500, anchor='nw', image=self.loadingFrames[frame_index])
@@ -69,14 +67,16 @@ class ClientGUI(Tk):
         if not (self.eventThread.is_set()):
             # Schedule the next frame of the GIF image to be displayed
             canvas.after(3, self.play_gif, canvas, next_frame_index)
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
             
-# Implementação do botão voltar -> destrói a pagina atual e cria uma nova pagina de Menu
     def backToMenu(self, page):
         self.clickSound()
         page.destroy()
         self.createMenuFrame()
 
-# Cria a tela de configurações
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def settingsFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
@@ -89,7 +89,6 @@ class ClientGUI(Tk):
         self.settings.create_text(450, 100, text="Configurações", font=("Impact", 80), fill = "white")
         self.settingsButtons()
 
-# botão voltar e definir o som em configurações
     def settingsButtons(self):
         self.settings.create_text(450, 200, text="Configurações", font=("Impact", 30), fill = "white")
         self.volume = Scale(self.settings, from_=0, to=100, orient=HORIZONTAL, length=300, font=("Impact", 30), command=lambda x: self.music.set_volume(int(x)/100))
@@ -97,7 +96,8 @@ class ClientGUI(Tk):
         self.backButton = Button(self.settings, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.settingsPage))
         self.settings.create_window(450, 500, window=self.backButton)
 
-# Cria a tela do Menu
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def createMenuFrame(self):
         self.menuFrame = Frame(self)
         self.menuFrame.pack()
@@ -108,7 +108,6 @@ class ClientGUI(Tk):
         self.menu.create_image(0, 0, image=self.image, anchor=NW)
         self.MenuButtons()
 
-# Cria e adiciona os botões da tela de menu -> Criar Jogo, Entrar em jogo, Sair e Configurações
     def MenuButtons(self):
         self.menu.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = "white")
         self.createGameButton = Button(self.menu, text="Criar Jogo", font=("Impact", 30), command=self.createGameFrame)
@@ -120,7 +119,8 @@ class ClientGUI(Tk):
         self.settingsButton = Button(self.menu, text="Configurações", font=("Impact", 30), command=self.settingsFrame)
         self.menu.create_window(775, 570, window=self.settingsButton)
 
-# Cria a tela de Criar jogo
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def createGameFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
@@ -133,7 +133,6 @@ class ClientGUI(Tk):
         self.createGame.create_text(450, 100, text="Criar Jogo", font=("Impact", 80), fill = "white")
         self.createGameButtons()
 
-# Define os botões e box de entrada da tela de criar jogo
     def createGameButtons(self):
         self.createGame.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
         self.gameNameEntry = Entry(self.createGame, font=("Impact", 30), width=20)
@@ -158,7 +157,6 @@ class ClientGUI(Tk):
         
         self.createGame.create_window(450, 500, window=self.backButton)
 
-# Define os botões e box de entrada da tela de criar jogo
     def waiting_Room(self, ID):
         self.clickSound()
 
@@ -190,7 +188,8 @@ class ClientGUI(Tk):
         print("Jogar")
         self.play(2)
 
-# Cria a tela de Entrar no Jogo
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def joinGameFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
@@ -203,7 +202,6 @@ class ClientGUI(Tk):
         self.joinGame.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
         self.joinGameButtons()
 
-# Botões e caixas de entrada de Entrar no jogo
     def joinGameButtons(self):
         self.joinGame.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
         self.gameNameEntry = Entry(self.joinGame, font=("Impact", 30), width=20)
@@ -226,7 +224,6 @@ class ClientGUI(Tk):
         self.backButton = Button(self.joinGame, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.joinGamePage))
         self.joinGame.create_window(450, 500, window=self.backButton)
 
-# comenet
     def send_ID(self): 
         self.clickSound()
         self.joinGamePage.destroy()
@@ -258,14 +255,16 @@ class ClientGUI(Tk):
         self.backButton = Button(self.SendID, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.SendIDPage))
         self.SendID.create_window(450, 500, window=self.backButton)
 
-# comenet
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
     def resetGameGUI(self):
         for button in self.buttons:
             button.config(text= '', state=DISABLED)
 
         self.buttonsDisable = [0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-# comenet
+        resetGame()
+
     def createPlayFrame(self, flag):
         if flag == 1:
             self.SendIDPage.destroy()
@@ -298,10 +297,23 @@ class ClientGUI(Tk):
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
 
+
+            #encerrar o jogo e mandar aviso pro outro cliente
         # Position the playPage frame anywhere on the screen
         self.playPage.place(x=0, y=0)
 
-# comenet
+        self.backButton = Button(self.play, text="Voltar", font=("Impact", 30), command = self.quit)
+        self.play.create_window(450, 500, window=self.backButton)
+
+    def quit(self):
+        # messagebox.showinfo("Erro", "Jogo Encerrado")
+        print("ERRO")
+        endGame()
+        # self.resetGameGUI()
+        # self.backToMenu(self.playPage)
+        self.destroy()
+        sys.exit()
+
     def play(self, flag):
         self.createPlayFrame(flag)
 
@@ -309,6 +321,7 @@ class ClientGUI(Tk):
         
         self.simbolo = ""
         self.simboloInt = getSimbolo()
+        self.varContinuar = "CNT"
 
         if(self.simboloInt == 0):
             self.simbolo = "X"
@@ -321,13 +334,17 @@ class ClientGUI(Tk):
         # ---------------------------------------------------------------------------------------------------
         try:
             while self.playing:
-                continuar("CNT") # verificar se o
+                if continuar(self.varContinuar) == False: 
+                    endGame()
+                    self.resetGameGUI()
+                    self.backToMenu(self.playPage)
+
                 self.turn = getTurn()
                 printBoard(); print()
 
                 self.play.itemconfig(self.text_item, text=self.turn)
 
-                time.sleep(2)
+                # time.sleep(2)
 
                 print("TURNO: " + self.turn)
 
@@ -344,10 +361,9 @@ class ClientGUI(Tk):
                     self.turnWait()
 
         except:
-            print("ERRO")
+            self.quit()
             #encerrar o jogo e mandar aviso pro outro cliente
 
-# comenet
     def endGameGUI(self):
         response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
 
@@ -358,7 +374,6 @@ class ClientGUI(Tk):
 
         while not event.wait(1):
             self.update()
-        
 
         self.playing = not fileResultado.get()
 
@@ -366,19 +381,23 @@ class ClientGUI(Tk):
             print("Reset GUI")
             self.resetGameGUI()
         else:
+            endGame()
             print("Fim Game GUI")
-
-# comenet
+            
     def turnWait(self):
-        fileResultado = Queue()
-        event = threading.Event()
-        waitingRoomThread = threading.Thread(target=waitResponse, args=(event, fileResultado,))    
-        waitingRoomThread.start()
-        
-        while not event.wait(1):
-            self.update()
 
-        message = fileResultado.get()
+        try:
+            fileResultado = Queue()
+            event = threading.Event()
+            waitingRoomThread = threading.Thread(target=waitResponse, args=(event, fileResultado,))    
+            waitingRoomThread.start()
+            
+            while not event.wait(1):
+                self.update()
+
+            message = fileResultado.get()
+        except:
+            print("EXEPTION")
 
         if message == "DEF":
             print("DEF")
@@ -403,10 +422,13 @@ class ClientGUI(Tk):
             self.buttons[var].config(text=simbolos[1 - self.simboloInt])
             printBoard()
         
+        elif message == "INV":
+            print("INV")
+            self.quit()
+        
         if (message == "DEF" or message == "TIE"):
             self.endGameGUI()
-
-# comenet
+        
     def turnPlay(self, i):
         
         if i == 0: movimento = "11"
@@ -422,29 +444,37 @@ class ClientGUI(Tk):
         self.buttons[i].config(text=self.simbolo, state=DISABLED)
         self.buttonsDisable[i] = 1
         
-        message = sendMove(movimento)
+        try:
+            message = sendMove(movimento)
 
-        if message == "WIN":
-            messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
-            print("WIN")
-            recvGameState(self.simboloInt)
-            printBoard()
+            if message == "WIN":
+                print("WIN")
+                recvGameState(self.simboloInt)
+                printBoard()
+                messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
 
-        elif message == "TIE":
-            messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
-            print("TIE")
-            recvGameState(self.simboloInt)
-            printBoard()
+            elif message == "TIE":
+                print("TIE")
+                recvGameState(self.simboloInt)
+                printBoard()
+                messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
 
-        elif message == "VAL":
-            print("VAL")
-            recvGameState(self.simboloInt)
-            printBoard()
-        
-        if (message == "WIN" or message == "TIE"):
-            self.endGameGUI()
+            elif message == "VAL":
+                print("VAL")
+                recvGameState(self.simboloInt)
+                printBoard()
+            
+            elif message == "INV":
+                print("INV")
+                self.quit()
 
-        self.button_pressed.set(True)
+            if (message == "WIN" or message == "TIE"):
+                self.endGameGUI()
+
+            self.button_pressed.set(True)
+
+        except:
+            self.quit()
         
 
 if __name__ == "__main__":

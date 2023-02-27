@@ -70,7 +70,6 @@ def endGameDecide(response, event, fileResultado):
 
     if continuar == "END":
         print("FIM JOGO")
-        endGame()
         event.set()
         fileResultado.put(True)
         return True
@@ -80,7 +79,6 @@ def endGameDecide(response, event, fileResultado):
 
     if continuar == "CNT":
         print("RESET GAME")
-        resetGame()
         event.set()
         fileResultado.put(False)
         return False
@@ -96,7 +94,6 @@ def continuar(continuar):
 
     if continuar == "END":
         print("FIM JOGO")
-        endGame()
         return False
 
     print("ESPERANDO RESPOSTA SERVER")
@@ -104,7 +101,6 @@ def continuar(continuar):
 
     if continuar == "END":
         print("OUTRO JOGADOR DESISTIU")
-        endGame()
         return False
 
     print("CONTINUAR: " + continuar)
