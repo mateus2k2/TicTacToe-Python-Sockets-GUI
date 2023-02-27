@@ -109,6 +109,8 @@ def waitResponse(event, fileResultado):
     except:
         print("ERROR")
 
+def getBoard():
+    return board
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def connectToServer(ip, port):
