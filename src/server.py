@@ -4,7 +4,8 @@ import random
 
 # Connection Data
 host = '127.0.0.1'
-port = 55599
+port = 55553
+limiteSalas = 2
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -110,6 +111,13 @@ def play(sala):
     sala['jogador' + str(jogando)].send("0".encode('ascii'))
     sala['jogador' + str(oponente)].send("1".encode('ascii'))
     
+    sala['jogador' + str(jogando)].send(sala['nickjogador' + str(oponente)].encode('ascii'))
+    sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
+    # sala['jogador' + str(jogando)].send("1111111111111111111111111".encode('ascii'))
+    # sala['jogador' + str(oponente)].send("1111111111111111111111111".encode('ascii'))
+    # print("nick1: " + sala['nickjogador' + jogando])
+    # print("nick2: " + sala['nickjogador' + oponente])
+    
     while True:
 
         # ---------------------------------------------------------------
@@ -181,7 +189,7 @@ def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
 
     client.send('NICK'.encode('ascii'))
-    nickname = client.recv(1024).decode('ascii')
+    nickname = client.recv(25).decode('ascii')
     print("NICK RECV: " + nickname)
     
     while True:
@@ -217,7 +225,7 @@ def createRoom(client, address):
     print("ID CRIADO: " + ID)
 
     client.send('NICK'.encode('ascii')) # 4 bytes
-    nickname = client.recv(1024).decode('ascii') # Nick = 1024 Bytes
+    nickname = client.recv(25).decode('ascii') # Nick = 1024 Bytes
     print("NICK RECEBIDO: " + nickname)
 
     salas.append({'jogador0': client, 'nickjogador0': nickname, 'ID': ID})
@@ -232,12 +240,21 @@ def decide():
 
         client, address = server.accept()
 
+        if(salas.__len__() + 1 > limiteSalas):
+            client.send('FULL'.encode('ascii'))
+            client.close()
+        else:
+            client.send('OK'.encode('ascii'))
+        
         escolha = client.recv(1024).decode('ascii')
-
+        
         if escolha == "JOIN":
+            print("JOIN")
             thread = threading.Thread(target=joinRoom, args=(client, address,))
             thread.start()
+        
         elif escolha == "CREATE":
+            print("CREATE")
             thread = threading.Thread(target=createRoom, args=(client, address,))
             thread.start()
 

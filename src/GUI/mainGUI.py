@@ -10,20 +10,19 @@ import threading
 import sys
 import os
 
-client_dir = os.path.join(os.path.dirname(__file__), "..")
-sys.path.append(client_dir)
-from server import *
+from clientGUI import *
+from serverGUI import *
 
 simbolos = ['X', 'O']
 
-class ServerGUI(Tk):
+class MainGUI(Tk):
     def __init__(self):
         pass
 
         
 
 if __name__ == "__main__":
-    client = ServerGUI()
+    client = MainGUI()
     client.mainloop()
     sys.exit()
 

@@ -4,9 +4,6 @@ import socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # inicializa o jogo
-ID = ""
-nickname = ""
-nicknameOpodente = ""
 board = [['', 'O', 'X'],
          ['X', 'O', 'X'],
          ['O', 'X', 'O'],]
@@ -85,9 +82,12 @@ def endGameDecide(response, event, fileResultado):
         fileResultado.put(False)
         return False
 
+def getNickOponente():
+    nicknameOpodente = client.recv(25).decode('ascii')
+    return nicknameOpodente
+ 
 def getSimbolo():
     simbolo = int(client.recv(1).decode('ascii'))
-    print("SIMBOLO: " + simbolos[simbolo]); print()
     return simbolo
 
 def getTurn():
@@ -116,17 +116,19 @@ def getBoard():
 def connectToServer(ip, port):
     try:
         client.connect((ip, port))
+        resposta = client.recv(1024).decode('ascii')
+        if(resposta == "OK"):
+            return True
+        elif(resposta == "FULL"):
+            print("Server is full")
+            return False
     except:
         print("Server is not running")
         return False
-    return True
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def joinGame(GUINick):
-    # if connectToServer('127.0.0.1', 55549) == False:
-    #     return 'Server is not running'
-
     client.send("JOIN".encode('ascii'))
     print("JOIN")
 
@@ -136,14 +138,6 @@ def joinGame(GUINick):
         client.send(nickname.encode('ascii'))
 
 def sendID(GUIID):
-    # print("GUIID" + GUIID)
-    # message = client.recv(4).decode('ascii')
-    # print("MENSAGEM: " + message)
-    # if message != "IDRQ": return True
-    # ID = GUIID
-    # client.send(ID.encode('ascii'))
-    # return False
-
     message = client.recv(4).decode('ascii')
     ID = GUIID
     client.send(ID.encode('ascii'))
@@ -155,9 +149,6 @@ def sendID(GUIID):
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def createGame(GUINick):
-    # if connectToServer('127.0.0.1', 55549) == False:
-    #     return 'Server is not running'
-        
     client.send("CREATE".encode('ascii'))
     print("CREATE")
 
