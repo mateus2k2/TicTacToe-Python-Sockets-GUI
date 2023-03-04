@@ -15,6 +15,7 @@ sys.path.append(client_dir)
 from client import *
 
 simbolos = ['X', 'O']
+corSimbulos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
 
 host = '127.0.0.1'
 port = 55553
@@ -273,30 +274,40 @@ class ClientGUI(Tk):
         self.playPageFrame = Frame(self)
         self.playPageFrame.pack(fill=BOTH, expand=True)
         self.playPageFrame.pack_propagate(False)
-        self.playPageFrame.configure(width=900, height=900)
+        self.playPageFrame.configure(width=900, height=600)
 
         self.playCanvas = self.createCanvas(self.playPageFrame)
         self.playCanvas.pack(fill=BOTH, expand=True)
         self.playCanvas.pack_propagate(False)
         self.playCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.text_item = self.playCanvas.create_text(150, 150, text="Jogando", font=("Impact", 20), fill="white")
-        self.playCanvas.lift(self.text_item) # bring the text item to the front
+        
+        self.playCanvas.create_text(450, 100, text="Jogando", font=("Impact", 80), fill = "white")
+        
+        self.textoJogarEsperar = self.playCanvas.create_text(450, 180, text="Jogando", font=("Impact", 20), fill="white")
+        self.playCanvas.lift(self.textoJogarEsperar)
+        
+        self.textoPlacarMeu = self.playCanvas.create_text(225, 300, text="", font=("Impact", 20), fill="white")
+        self.playCanvas.lift(self.textoPlacarMeu)
+        
+        self.textoPlacarAponente = self.playCanvas.create_text(675, 300, text="", font=("Impact", 20), fill="white")
+        self.playCanvas.lift(self.textoPlacarAponente)
 
-        # Create a frame inside the playCanvas canvas to hold the buttons
         buttonFrame = Frame(self.playCanvas, width=30, height=15)
-        buttonFrame.pack(side=TOP, pady=10)
+        # meio x = 900 (largura do Frame) - 140 (Largura de todos os botões) / 2 = 330
+        # meio y = 600 (altura do Frame) - 140 (altura de todos os botões) / 2 = 180
+        buttonFrame.place(x=330, y=200) 
 
         self.buttons = []
         for i in range(9):
             button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
+            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 60 bold", fg="#EE4035", bg="white")
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
-
 
         self.playPageFrame.place(x=0, y=0)
 
         self.backButton = Button(self.playCanvas, text="Sair", font=("Impact", 30), command = self.quit)
-        self.playCanvas.create_window(450, 500, window=self.backButton)
+        self.playCanvas.create_window(450, 550, window=self.backButton)
 
     def quit(self):
         # try:
@@ -320,6 +331,10 @@ class ClientGUI(Tk):
         self.simboloInt = getSimbolo()
         self.nickOponente = getNickOponente().replace('-', '')
         print("nickOponente: " + self.nickOponente)
+        
+        self.countDerrotas = 0
+        self.countVitorias = 0
+        self.countEmpates = 0
 
         self.playing = True
         self.buttonPressed = BooleanVar(value=False)
@@ -330,7 +345,9 @@ class ClientGUI(Tk):
                 self.turn = getTurn()
                 printBoard(); print()
 
-                self.playCanvas.itemconfig(self.text_item, text=self.turn)
+                self.playCanvas.itemconfig(self.textoJogarEsperar, text=self.turn)
+                self.playCanvas.itemconfig(self.textoPlacarMeu, text = self.nick + " = " + str(self.countVitorias))
+                self.playCanvas.itemconfig(self.textoPlacarAponente, text = str(self.countDerrotas) + " = " + self.nickOponente)
 
                 time.sleep(2)
 
@@ -403,6 +420,7 @@ class ClientGUI(Tk):
                 position = recvGameState(1-self.simboloInt)
                 self.buttons[position].config(text=simbolos[1 - self.simboloInt])
                 messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
+                self.countDerrotas += 1
 
             elif message == "TIE":
                 print("TIE")
@@ -410,6 +428,7 @@ class ClientGUI(Tk):
                 position = recvGameState(1-self.simboloInt)
                 self.buttons[position].config(text=simbolos[1 - self.simboloInt])
                 messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
+                self.countEmpates += 1
 
             elif message == "VAL":
                 print("VAL")
@@ -440,6 +459,7 @@ class ClientGUI(Tk):
         if i == 7: movimento = "32"
         if i == 8: movimento = "33"
         
+        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
         self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
         
         try:
@@ -450,12 +470,14 @@ class ClientGUI(Tk):
                 printBoard()
                 recvGameState(self.simboloInt)
                 messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
+                self.countVitorias += 1
 
             elif message == "TIE":
                 print("TIE")
                 printBoard()
                 recvGameState(self.simboloInt)
                 messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
+                self.countEmpates += 1
 
             elif message == "VAL":
                 print("VAL")
