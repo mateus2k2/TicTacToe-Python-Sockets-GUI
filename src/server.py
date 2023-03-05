@@ -5,7 +5,7 @@ import random
 # Connection Data
 host = '127.0.0.1'
 port = 55553
-limiteSalas = 2
+limiteSalas = 10
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -50,7 +50,6 @@ def endGame(sala):
     sala['jogador1'].close()
 
     # deletar a sala do vetor de salas
-    # del next((salaRet for salaRet in salas if salaRet['ID'] == sala['ID']), None)
     salas.remove(sala)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -68,7 +67,7 @@ def printBoard(sala):
     print("-" * 14)
 
 def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
-    jogador1.send(mensagem1.encode('ascii'))
+    jogador1.send(mensagem1.encode('ascii')) 
     jogador2.send(mensagem2.encode('ascii'))
     jogador1.send(str(movimento).encode('ascii'))
     jogador2.send(str(movimento).encode('ascii'))
@@ -76,6 +75,7 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
 def handle(sala):
     try:
         play(sala)
+    # Caso  tenha algum erro no jogo, o servidor encerra a sala
     except:
         print("Client Saiu")   
         endGame(sala)
@@ -87,15 +87,15 @@ def play(sala):
 
     # ---------------------------------------------------------------
     # Inicializa o jogo
-    sala['board'] = [[ '', 'O', 'X'], 
-                     ['X', 'O', 'X'],
-                     ['O', 'X', 'O'],]
-    sala['jogadas'] = 8 
+    # sala['board'] = [[ '', 'O', 'X'], 
+    #                  ['X', 'O', 'X'],
+    #                  ['O', 'X', 'O'],]
+    # sala['jogadas'] = 8 
     
-    # sala['board'] =[['', '', ''],
-    #                 ['', '', ''],
-    #                 ['', '', ''],]
-    # sala['jogadas'] = 0 
+    sala['board'] =[['', '', ''],
+                    ['', '', ''],
+                    ['', '', ''],]
+    sala['jogadas'] = 0 
     movimento = ""
 
     # ---------------------------------------------------------------
@@ -111,12 +111,9 @@ def play(sala):
     sala['jogador' + str(jogando)].send("0".encode('ascii'))
     sala['jogador' + str(oponente)].send("1".encode('ascii'))
     
+    # Envia o nick de cada jogador
     sala['jogador' + str(jogando)].send(sala['nickjogador' + str(oponente)].encode('ascii'))
     sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
-    # sala['jogador' + str(jogando)].send("1111111111111111111111111".encode('ascii'))
-    # sala['jogador' + str(oponente)].send("1111111111111111111111111".encode('ascii'))
-    # print("nick1: " + sala['nickjogador' + jogando])
-    # print("nick2: " + sala['nickjogador' + oponente])
     
     while True:
 
@@ -188,47 +185,44 @@ def play(sala):
 def joinRoom(client, address):
     print("CONNECTED JOIN{}".format(str(address)))
 
-    client.send('NICK'.encode('ascii'))
-    nickname = client.recv(25).decode('ascii')
+    client.send('NICK'.encode('ascii')) # Envia Requisição de nickname
+    nickname = client.recv(25).decode('ascii') # Recebe o nickname
     print("NICK RECV: " + nickname)
     
-    while True:
-        client.send('IDRQ'.encode('ascii'))
-        ID = client.recv(8).decode('ascii')
-        print("ID RECV: " + ID)
-        salaTmp = next((sala for sala in salas if sala['ID'] == ID), None)
-        if salaTmp != None and (not ('jogador1' in salaTmp)): 
-            client.send('IDOK'.encode('ascii'))
-            break
-        client.send('IDRQ'.encode('ascii'))
-
     salaCompleta = {}
-    for sala in salas:
-        if sala['ID'] == ID:
-            sala['jogador1'] = client
-            sala['nickjogador1'] = nickname
-            salaCompleta = sala
-            break
+    while True:
+        client.send('IDRQ'.encode('ascii')) # Envia Requisição de ID
+        ID = client.recv(8).decode('ascii') # Recebe o ID
+        print("ID RECV: " + ID)
+        salaCompleta = next((sala for sala in salas if sala['ID'] == ID), None) # Procura a sala com o ID
+        if salaCompleta != None and (not ('jogador1' in salaCompleta)): # Se a sala existe e não está completa
+            client.send('IDOK'.encode('ascii')) # Envia confirmação de ID
+            break # Sai do loop
+        client.send('IDRQ'.encode('ascii')) # Se não envia mais Requisição de ID
+
+    salaCompleta['jogador1'] = client # Adiciona o client do jogador na sala
+    salaCompleta['nickjogador1'] = nickname # Adiciona o nickname do jogador 1 na sala
     
     print("\nSALA COMPLETA")
     [print(key,':',str(value)[:50]) for key, value in salaCompleta.items()]
 
-    handle(sala)
+    handle(salaCompleta)
 
 def createRoom(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
 
-    ID = str(random.randint(10000000, 99999999))
-    while ID in IDCriados:
-        ID = str(random.randint(10000000, 99999999))
-    client.send(ID.encode('ascii')) # 8 bytes
+    ID = str(random.randint(10000000, 99999999)) # Gera um ID aleatório de 8 dígitos
+    while ID in IDCriados: # Verifica se o ID já foi criado
+        ID = str(random.randint(10000000, 99999999)) # Se sim, gera outro
+    client.send(ID.encode('ascii')) # Envia o ID
     print("ID CRIADO: " + ID)
 
-    client.send('NICK'.encode('ascii')) # 4 bytes
-    nickname = client.recv(25).decode('ascii') # Nick = 1024 Bytes
+    client.send('NICK'.encode('ascii')) # Envia Requisição de nickname
+    nickname = client.recv(25).decode('ascii') # Recebe o nickname
     print("NICK RECEBIDO: " + nickname)
-
-    salas.append({'jogador0': client, 'nickjogador0': nickname, 'ID': ID})
+    
+    # Cria uma novo item no vetor de dicionario de salas com o client do jogador 0 o nickname do jogador e o ID
+    salas.append({'jogador0': client, 'nickjogador0': nickname, 'ID': ID}) 
 
     print("\nSALA CRIADA")
     [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
@@ -238,17 +232,17 @@ def decide():
         print("---------------------------------------------------")
         print("SERVIDOR ESPERANDO\n")
 
-        client, address = server.accept()
+        client, address = server.accept() # Aceita conexão
 
-        if(salas.__len__() + 1 > limiteSalas):
-            client.send('FULL'.encode('ascii'))
-            client.close()
+        if(salas.__len__() + 1 > limiteSalas): # Verifica se o limite de salas foi atingido
+            client.send('FULL'.encode('ascii')) # Envia mensagem de servidor cheio
+            client.close() # Fecha a conexão
         else:
-            client.send('OK'.encode('ascii'))
+            client.send('OK'.encode('ascii')) # Envia mensagem de servidor OK
         
-        escolha = client.recv(1024).decode('ascii')
+        escolha = client.recv(1024).decode('ascii') # Recebe a escolha do cliente
         
-        if escolha == "JOIN":
+        if escolha == "JOIN": 
             print("JOIN")
             thread = threading.Thread(target=joinRoom, args=(client, address,))
             thread.start()

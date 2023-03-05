@@ -60,13 +60,15 @@ class ClientGUI(customtkinter.CTk):
         except EOFError:
             pass
 
-    def playGif(self, canvas, frame_index=0):
-        canvas.create_image(800, 500, anchor='nw', image=self.loadingFrames[frame_index])
+    def playGif(self, canvas, event, frame_index=0):
+        self.loading_id = canvas.create_image(790, 490, anchor='nw', image=self.loadingFrames[frame_index])
 
         nextFameIndex = (frame_index + 1) % len(self.loadingFrames)
 
-        if not (self.eventThread.is_set()):
-            canvas.after(3, self.playGif, canvas, nextFameIndex)
+        if not (event.is_set()):
+            canvas.after(3, self.playGif, canvas, event, nextFameIndex)
+        else:
+            canvas.delete(self.loading_id)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
             
@@ -172,16 +174,16 @@ class ClientGUI(customtkinter.CTk):
         def OkCallback():
             self.nick = self.NickEntry.get() 
             
-            if(len(self.nick) > 25 or self.nick == ""):
+            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
-            if connectToServer(host, port) == False:
+            if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
                 messagebox.showinfo("Error", "Server is not Running")
                 return 
 
-            IDVar = createGame(self.nick.ljust(25, "-")) 
-            self.waitingRoomGUI(IDVar)
+            IDVar = createGame(self.nick.ljust(25, "-")) # Manda o nick (com "-" para completar os 25 caracteres) para o servidor e recebe o ID do jogo
+            self.waitingRoomGUI(IDVar) # Chama a tela de espera
 
         self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
         self.createGameButton = customtkinter.CTkButton(self.createGameCanvas, text="Criar Jogo", font=("Impact", 30), command=OkCallback)
@@ -213,16 +215,16 @@ class ClientGUI(customtkinter.CTk):
         self.loadGifFrames()
 
         self.eventThread = threading.Event()
-        waitingRoomThread = threading.Thread(target=waitingRoom, args=(self.eventThread,))    
+        waitingRoomThread = threading.Thread(target=waitingRoom, args=(self.eventThread,)) 
         waitingRoomThread.start()
         
-        while not self.eventThread.is_set():
-            self.playGif(self.waitingRoomCanvas)
+        while not self.eventThread.is_set(): # Fica esperando o outro jogador
+            self.playGif(self.waitingRoomCanvas, self.eventThread, 0)
             self.update()
 
 
         print("Jogar")
-        self.play(self.waitingRoomPageFrame)
+        self.play(self.waitingRoomPageFrame) # Chama a tela de jogo
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -248,16 +250,16 @@ class ClientGUI(customtkinter.CTk):
         def OkCallback():
             self.nick = self.NickEntry.get() 
             
-            if(len(self.nick) > 25 or self.nick == ""):
+            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
-            if connectToServer(host, port) == False:
+            if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
                 messagebox.showinfo("Error", "Server is not Running")
                 return 
 
-            joinGame(self.nick.ljust(25, "-"))
-            self.sendIDGUI()
+            joinGame(self.nick.ljust(25, "-")) # Manda o nick (com "-" para completar os 25 caracteres) para o servidor
+            self.sendIDGUI() # Chama a tela de mandar o ID
 
         self.joinGameButton = customtkinter.CTkButton(self.joinGameCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
         self.joinGameCanvas.create_window(450, 400, window=self.joinGameButton)
@@ -284,16 +286,16 @@ class ClientGUI(customtkinter.CTk):
         def OkCallback():
             ID = self.IDEntry.get() # Get the value of the entry field
 
-            if((not all(digito.isdigit() for digito in ID) and len(ID) != 8) or ID == ""):
+            if((not all(digito.isdigit() for digito in ID) and len(ID) != 8) or ID == ""): # Verifica se todos os caracteres sao numeros e se o tamanho é 8 e ele nao pode ser vazio
                 messagebox.showinfo("Error", "ID invalido")
                 return
             
-            if sendID(ID) == False:
+            if sendID(ID) == False: # Verifica se o ID corresponde com o servidor 
                 messagebox.showinfo("Error", "Room is not Available")
                 return
 
             print("Jogar")
-            self.play(self.joinGamePageFrame)
+            self.play(self.joinGamePageFrame) # Chama a tela de jogo
             
 
         self.SendIDButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
@@ -305,7 +307,11 @@ class ClientGUI(customtkinter.CTk):
         for button in self.buttons:
             button.config(text= '', state=DISABLED)
 
-        resetGame()
+        self.countDerrotas = 0
+        self.countVitorias = 0
+        self.countEmpates = 0
+        
+        resetBoad()
 
     def createPlayFrame(self, frame):
         frame.destroy()
@@ -342,7 +348,6 @@ class ClientGUI(customtkinter.CTk):
         
         self.buttons = []
         for i in range(9):
-            # mudar posicionamento dos botões para tem um espaço entre eles e colocar as linhas entre eles
             button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg="#1e1e1e", activebackground = "#1e1e1e", borderwidth=2)
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
@@ -371,8 +376,8 @@ class ClientGUI(customtkinter.CTk):
 
         # ---------------------------------------------------------------------------------------------------
         
-        self.simboloInt = getSimbolo()
-        self.nickOponente = getNickOponente().replace('-', '')
+        self.simboloInt = getSimbolo() # Recebe o simbolo do jogador, 0 ou 1 (X ou O)
+        self.nickOponente = getNickOponente().replace('-', '') # Recebe o nick do oponente e remove os traços
         print("nickOponente: " + self.nickOponente)
         
         self.countDerrotas = 0
@@ -388,23 +393,24 @@ class ClientGUI(customtkinter.CTk):
                 self.turn = getTurn()
                 printBoard(); print()
 
-                self.playCanvas.itemconfig(self.textoJogarEsperar, text=self.turn)
-                self.playCanvas.itemconfig(self.textoPlacarMeu, text = self.nick + " = " + str(self.countVitorias))
-                self.playCanvas.itemconfig(self.textoPlacarAponente, text = str(self.countDerrotas) + " = " + self.nickOponente)
+                self.playCanvas.itemconfig(self.textoPlacarMeu, text = self.nick + " = " + str(self.countVitorias)) # Atualiza o placar do jogador
+                self.playCanvas.itemconfig(self.textoPlacarAponente, text = str(self.countDerrotas) + " = " + self.nickOponente) # Atualiza o placar do oponente
 
                 time.sleep(2)
 
                 print("TURNO: " + self.turn)
 
                 if self.turn == 'PLAY': 
+                    self.playCanvas.itemconfig(self.textoJogarEsperar, text="SEU TURNO. JOGUE") # Atualiza o texto de jogar ou esperar
                     board = getBoard()
-                    for i, button in enumerate(self.buttons):
-                        if board[i//3][i%3] == '':
-                            button.config(state=NORMAL)
+                    for i, button in enumerate(self.buttons): # Passa por todos os botoes
+                        if board[i//3][i%3] == '': # Se o botao estiver vazio
+                            button.config(state=NORMAL) # Ativa o botao
 
-                    self.wait_variable(self.buttonPressed)
+                    self.wait_variable(self.buttonPressed) # Esperar por um botao ser pressionado
 
                 elif self.turn == 'WAIT':
+                    self.playCanvas.itemconfig(self.textoJogarEsperar, text="TRUNO DO OPODENTE. ESPERE") # Atualiza o texto de jogar ou esperar
                     self.turnWait()
 
                 else:
@@ -415,79 +421,86 @@ class ClientGUI(customtkinter.CTk):
             self.quit()
 
     def endGameGUI(self):
-        response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?")
+        response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?") # Pergunta se o jogador quer jogar novamente
 
         event = threading.Event()
         fileResultado = Queue()
-        endGameDecideThread = threading.Thread(target=endGameDecide, args=(response, event, fileResultado))
+        endGameDecideThread = threading.Thread(target=endGameDecide, args=(response, event, fileResultado)) # Cria uma thread para decidir se o jogo vai ser reiniciado ou não
         endGameDecideThread.start()
 
-        while not event.wait(1):
+        while not event.wait(1): # Espera a thread terminar
             self.update()
 
-        self.playing = not fileResultado.get()
+        self.playing = not fileResultado.get() # Se o jogo não for reiniciado, a variavel playing é setada para False
 
-        if(self.playing == True):
+        if(self.playing == True): # Se o jogo for reiniciado
             print("Reset GUI")
             self.resetGameGUI()
-        else:
+        else: # Se o jogo não for reiniciado
             print("Fim Game GUI")
             endGame()
             self.quit()
 
+    def updateGui(self, message, simbolo):
+        if message == "WIN":
+            print("WIN")
+            printBoard()
+            position = recvGameState(simbolo)
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
+            self.countVitorias += 1
+            
+        if message == "DEF":
+            print("DEF")
+            printBoard()
+            position = recvGameState(simbolo)
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
+            self.countDerrotas += 1
+        
+        elif message == "TIE":
+            print("TIE")
+            printBoard()
+            position = recvGameState(simbolo)
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
+            self.countEmpates += 1
+        
+        elif message == "VAL":
+            print("VAL")
+            printBoard()
+            position = recvGameState(simbolo)
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+        
+        elif message == "INV":
+            print("INV")
+            self.quit()
+
+        if message in ["DEF", "TIE", "WIN"]:
+            self.endGameGUI()
+    
     def turnWait(self):
         try:
-            # self.loading = Image.open("images/loading.gif")
-            # self.loadingFrames = []
-            # self.loadGifFrames()
+            self.loading = Image.open("images/loading.gif")
+            self.loadingFrames = []
+            self.loadGifFrames()
             
-            for i, button in enumerate(self.buttons):
-                button.config(state=DISABLED)
+            for i, button in enumerate(self.buttons): # Passa por todos os botoes
+                button.config(state=DISABLED) # Desativa o botao
 
             fileResultado = Queue()
             event = threading.Event()
-            waitingRoomThread = threading.Thread(target=waitResponse, args=(event, fileResultado,))    
+            waitingRoomThread = threading.Thread(target=waitResponse, args=(event, fileResultado,)) # Cria uma thread para esperar a resposta do servidor
             waitingRoomThread.start()
             
-            while not event.wait(1):
-            # while not event.is_set():
-                # print("GIF")
-                # self.playGif(self.playCanvas)
+            while not event.is_set():
+                # self.playGif(self.playCanvas, event, 0)
                 self.update()
-
-            message = fileResultado.get()
-
-            if message == "DEF":
-                print("DEF")
-                printBoard()
-                position = recvGameState(1-self.simboloInt)
-                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
-                messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
-                self.countDerrotas += 1
-
-            elif message == "TIE":
-                print("TIE")
-                printBoard()
-                position = recvGameState(1-self.simboloInt)
-                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
-                messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
-                self.countEmpates += 1
-
-            elif message == "VAL":
-                print("VAL")
-                printBoard()
-                position = recvGameState(1-self.simboloInt)
-                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
             
-            elif message == "INV":
-                print("INV")
-                self.quit()
+            message = fileResultado.get() # Pega a mensagem recebida do servidor na thread
+
+            self.updateGui(message, 1-self.simboloInt) # Atualiza a GUI com a mensagem recebida do servidor
             
-            if (message == "DEF" or message == "TIE"):
-                self.endGameGUI()
 
         except:
             print("Trun Wait Error")
@@ -495,49 +508,14 @@ class ClientGUI(customtkinter.CTk):
             
     def turnPlay(self, i):
         
-        if i == 0: movimento = "11"
-        if i == 1: movimento = "12"
-        if i == 2: movimento = "13"
-        if i == 3: movimento = "21"
-        if i == 4: movimento = "22"
-        if i == 5: movimento = "23"
-        if i == 6: movimento = "31"
-        if i == 7: movimento = "32"
-        if i == 8: movimento = "33"
-        
-        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[self.simboloInt])
-        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
+        posicoes = ["11", "12", "13", "21", "22", "23", "31", "32", "33"]
         
         try:
-            message = sendMove(movimento)
+            message = sendMove(posicoes[i]) # Envia a jogada para o servidor
 
-            if message == "WIN":
-                print("WIN")
-                printBoard()
-                recvGameState(self.simboloInt)
-                messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
-                self.countVitorias += 1
+            self.updateGui(message, self.simboloInt) # Atualiza a GUI com a mensagem recebida do servidor
 
-            elif message == "TIE":
-                print("TIE")
-                printBoard()
-                recvGameState(self.simboloInt)
-                messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
-                self.countEmpates += 1
-
-            elif message == "VAL":
-                print("VAL")
-                printBoard()
-                recvGameState(self.simboloInt)
-            
-            elif message == "INV":
-                print("INV")
-                self.quit()
-
-            if (message == "WIN" or message == "TIE"):
-                self.endGameGUI()
-
-            self.buttonPressed.set(True)
+            self.buttonPressed.set(True) # Seta a variavel buttonPressed para True para que o loop principal posso continuar 
 
         except:
             self.quit()
