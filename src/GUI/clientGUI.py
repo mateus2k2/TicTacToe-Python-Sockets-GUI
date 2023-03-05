@@ -299,8 +299,8 @@ class ClientGUI(Tk):
 
         self.buttons = []
         for i in range(9):
-            button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
-            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 60 bold", fg="#EE4035", bg="white")
+            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
+            button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 20 bold", fg="#EE4035", bg="white")
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
 
@@ -459,8 +459,8 @@ class ClientGUI(Tk):
         if i == 7: movimento = "32"
         if i == 8: movimento = "33"
         
-        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
-        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
+        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
+        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
         
         try:
             message = sendMove(movimento)
