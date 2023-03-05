@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import messagebox
+import customtkinter
 from PIL import ImageTk, Image
 import pygame
 
@@ -20,18 +21,21 @@ corSimbulos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
 host = '127.0.0.1'
 port = 55553
 
-class ClientGUI(Tk):
+class ClientGUI(customtkinter.CTk):
     def __init__(self):
         super().__init__()
+        customtkinter.set_appearance_mode("System")
+        customtkinter.set_default_color_theme("dark-blue")
         self.title("Jogo da Velha")
         self.geometry("900x600")
         self.resizable(False, False)
         pygame.mixer.init()
         self.play_music()
+        self.back_image = ImageTk.PhotoImage(Image.open("Images/back.png").resize((25, 25)))
         self.createMenuFrame()
 
     def createCanvas(self, master):
-        canvas = Canvas(master, width=900, height=600)
+        canvas = customtkinter.CTkCanvas(master, width=900, height=600)
         canvas.pack()
         return canvas
 
@@ -76,43 +80,73 @@ class ClientGUI(Tk):
     def settingsFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
-        self.settingsPageFrame = Frame(self)
+        self.settingsPageFrame = customtkinter.CTkFrame(self)
         self.settingsPageFrame.pack()
         self.settingsPageFrame.pack_propagate(False)
         self.settingsPageFrame.configure(width=900, height=600)
         self.settingsCanvas = self.createCanvas(self.settingsPageFrame)
-        self.settingsCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.settingsCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.settingsCanvas.create_text(450, 100, text="Configurações", font=("Impact", 80), fill = "white")
         self.settingsButtons()
 
+    def set_volume(self, val):
+        volume = int(val) / 100.0
+        self.music.set_volume(volume)
+
+    def set_theme(self, event):
+        if self.tema.get() == "System":
+            customtkinter.set_appearance_mode("System")
+        elif self.tema.get() == "Light":
+            customtkinter.set_appearance_mode("Light")
+        elif self.tema.get() == "Dark":
+            customtkinter.set_appearance_mode("Dark")
+
+    def set_color(self, event):
+        if self.cor.get() == "Azul-Escuro":
+            customtkinter.set_default_color_theme("dark-blue")
+        elif self.cor.get() == "Azul":
+            customtkinter.set_default_color_theme("blue")
+        elif self.cor.get() == "Verde":
+            customtkinter.set_default_color_theme("green")
+
+
     def settingsButtons(self):
-        self.settingsCanvas.create_text(450, 200, text="Configurações", font=("Impact", 30), fill = "white")
-        self.volume = Scale(self.settingsCanvas, from_=0, to=100, orient=HORIZONTAL, length=300, font=("Impact", 30), command=lambda x: self.music.set_volume(int(x)/100))
-        self.settingsCanvas.create_window(450, 300, window=self.volume)
-        self.backButton = Button(self.settingsCanvas, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.settingsPageFrame))
-        self.settingsCanvas.create_window(450, 500, window=self.backButton)
+        self.settingsCanvas.create_text(450, 200, text="Volume", font=("Impact", 30), fill = "white")
+        self.volume = customtkinter.CTkSlider(self.settingsCanvas, from_=0, to=100, command= lambda event: self.set_volume(self.volume.get()))
+        self.settingsCanvas.create_window(450, 250, window=self.volume)
+        self.settingsCanvas.create_text(450, 300, text="Tema", font=("Impact", 30), fill = "white")
+        self.tema = customtkinter.CTkComboBox(self.settingsCanvas, values=["System", "Light", "Dark"], command= lambda event: self.set_theme(self.tema.get()))
+        self.settingsCanvas.create_window(450, 350, window=self.tema)
+        self.settingsCanvas.create_text(450, 400, text="Cor", font=("Impact", 30), fill = "white")
+        self.cor = customtkinter.CTkComboBox(self.settingsCanvas, values=["Azul-Escuro", "Azul", "Verde"], command= lambda event: self.set_color(self.cor.get()))
+        self.settingsCanvas.create_window(450, 450, window=self.cor)
+        self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
+        self.settingsCanvas.create_window(815, 570, window=self.backButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def createMenuFrame(self):
-        self.menuFrame = Frame(self)
+        self.menuFrame = customtkinter.CTkFrame(self)
         self.menuFrame.pack()
         self.menuFrame.pack_propagate(False)
         self.menuFrame.configure(width=900, height=600)
         self.menuCanvas = self.createCanvas(self.menuFrame)
-        self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600)))
-        self.menuCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.menuCanvas.configure(bg="#1e1e1e")
+        #self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600)))
+        #self.menuCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.MenuButtons()
 
     def MenuButtons(self):
-        self.menuCanvas.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = "white")
-        self.createGameButton = Button(self.menuCanvas, text="Criar Jogo", font=("Impact", 30), command=self.createGameFrame)
+        self.menuCanvas.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = "#dee4ed")
+        self.createGameButton = customtkinter.CTkButton(self.menuCanvas, text="Criar Jogo", font=("Impact", 30), command=self.createGameFrame)
         self.menuCanvas.create_window(450, 300, window=self.createGameButton)
-        self.joinGameButton = Button(self.menuCanvas, text="Entrar em Jogo", font=("Impact", 30), command=self.joinGameFrame)
+        self.joinGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo", font=("Impact", 30), command=self.joinGameFrame)
         self.menuCanvas.create_window(450, 400, window=self.joinGameButton)
-        self.exitButton = Button(self.menuCanvas, text="Sair", font=("Impact", 30), command=self.destroy)
+        self.exitButton = customtkinter.CTkButton(self.menuCanvas, text="Sair", font=("Impact", 30), command=self.destroy)
         self.menuCanvas.create_window(450, 500, window=self.exitButton)
-        self.settingsButton = Button(self.menuCanvas, text="Configurações", font=("Impact", 30), command=self.settingsFrame)
+        self.settings_image = ImageTk.PhotoImage(Image.open("Images/settings.png").resize((25, 25)))
+        self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="Configurações", font=("Impact", 30),image=self.settings_image, compound="left", command=self.settingsFrame)
+        #self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="",image=self.settings_image, command=self.settingsFrame, width=25, height=25)
         self.menuCanvas.create_window(775, 570, window=self.settingsButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -120,12 +154,12 @@ class ClientGUI(Tk):
     def createGameFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
-        self.createGamePageFrame = Frame(self)
+        self.createGamePageFrame = customtkinter.CTkFrame(self)
         self.createGamePageFrame.pack()
         self.createGamePageFrame.pack_propagate(False)
         self.createGamePageFrame.configure(width=900, height=600)
         self.createGameCanvas = self.createCanvas(self.createGamePageFrame)
-        self.createGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.createGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.createGameCanvas.create_text(450, 100, text="Criar Jogo", font=("Impact", 80), fill = "white")
         self.createGameButtons()
 
@@ -148,10 +182,10 @@ class ClientGUI(Tk):
             self.waitingRoomGUI(IDVar)
 
         self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
-        self.createGameButton = Button(self.createGameCanvas, text="Criar Jogo", font=("Impact", 30), command=OkCallback)
+        self.createGameButton = customtkinter.CTkButton(self.createGameCanvas, text="Criar Jogo", font=("Impact", 30), command=OkCallback)
         
         self.createGameCanvas.create_window(450, 400, window=self.createGameButton)
-        self.backButton = Button(self.createGameCanvas, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.createGamePageFrame))
+        self.backButton = customtkinter.CTkButton(self.createGameCanvas, text="Voltar", font=("Impact", 30), image=self.back_image, compound="left", command=lambda: self.backToMenu(self.createGamePageFrame))
         
         self.createGameCanvas.create_window(450, 500, window=self.backButton)
 
@@ -160,13 +194,13 @@ class ClientGUI(Tk):
 
         self.createGamePageFrame.destroy()
 
-        self.waitingRoomPageFrame = Frame(self)
+        self.waitingRoomPageFrame = customtkinter.CTkFrame(self)
         self.waitingRoomPageFrame.pack()
         self.waitingRoomPageFrame.pack_propagate(False)
         self.waitingRoomPageFrame.configure(width=900, height=600)
 
         self.waitingRoomCanvas = self.createCanvas(self.waitingRoomPageFrame)
-        self.waitingRoomCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.waitingRoomCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.waitingRoomCanvas.create_text(450, 100, text="Sala de Esperda: ", font=("Impact", 80), fill = "white")
         self.waitingRoomCanvas.create_text(450, 350, text= "ID: " + str(ID), font=("Impact", 40), fill = "white")
         self.waitingRoomCanvas.create_text(450, 450, text= "Esperando Outro Jogador", font=("Impact", 40), fill = "white")
@@ -192,12 +226,12 @@ class ClientGUI(Tk):
     def joinGameFrame(self):
         self.clickSound()
         self.menuFrame.destroy()
-        self.joinGamePageFrame = Frame(self)
+        self.joinGamePageFrame = customtkinter.CTkFrame(self)
         self.joinGamePageFrame.pack()
         self.joinGamePageFrame.pack_propagate(False)
         self.joinGamePageFrame.configure(width=900, height=600)
         self.joinGameCanvas = self.createCanvas(self.joinGamePageFrame)
-        self.joinGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.joinGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.joinGameCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
         self.joinGameButtons()
 
@@ -220,25 +254,25 @@ class ClientGUI(Tk):
             joinGame(self.nick.ljust(25, "-"))
             self.sendIDGUI()
 
-        self.joinGameButton = Button(self.joinGameCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
+        self.joinGameButton = customtkinter.CTkButton(self.joinGameCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
         self.joinGameCanvas.create_window(450, 400, window=self.joinGameButton)
-        self.backButton = Button(self.joinGameCanvas, text="Voltar", font=("Impact", 30), command=lambda: self.backToMenu(self.joinGamePageFrame))
+        self.backButton = customtkinter.CTkButton(self.joinGameCanvas, text="Voltar", font=("Impact", 30), image=self.back_image, compound="left" , command=lambda: self.backToMenu(self.joinGamePageFrame))
         self.joinGameCanvas.create_window(450, 500, window=self.backButton)
 
     def sendIDGUI(self): 
         self.clickSound()
         self.joinGamePageFrame.destroy()
         
-        self.SendIDPageFrame = Frame(self)
+        self.SendIDPageFrame = customtkinter.CTkButton(self)
         self.SendIDPageFrame.pack()
         self.SendIDPageFrame.pack_propagate(False)
         self.SendIDPageFrame.configure(width=900, height=600)
         self.SendIDCanvas = self.createCanvas(self.SendIDPageFrame)
-        self.SendIDCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.SendIDCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.SendIDCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
         
         self.SendIDCanvas.create_text(450, 200, text="Escolha ID:", font=("Impact", 30), fill = "white")
-        self.IDEntry = Entry(self.SendIDCanvas, font=("Impact", 30), width=20)
+        self.IDEntry = customtkinter.CTkEntry(self.SendIDCanvas, font=("Impact", 30), width=20)
         self.SendIDCanvas.create_window(450, 250, window=self.IDEntry)
         
         def OkCallback():
@@ -256,7 +290,7 @@ class ClientGUI(Tk):
             self.play(self.joinGamePageFrame)
             
 
-        self.SendIDButton = Button(self.SendIDCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
+        self.SendIDButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
         self.SendIDCanvas.create_window(450, 400, window=self.SendIDButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -271,7 +305,7 @@ class ClientGUI(Tk):
         frame.destroy()
         # ---------------------------------------------------------------------------------------------------
 
-        self.playPageFrame = Frame(self)
+        self.playPageFrame = customtkinter.CTkFrame(self)
         self.playPageFrame.pack(fill=BOTH, expand=True)
         self.playPageFrame.pack_propagate(False)
         self.playPageFrame.configure(width=900, height=600)
@@ -279,7 +313,7 @@ class ClientGUI(Tk):
         self.playCanvas = self.createCanvas(self.playPageFrame)
         self.playCanvas.pack(fill=BOTH, expand=True)
         self.playCanvas.pack_propagate(False)
-        self.playCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        #self.playCanvas.create_image(0, 0, image=self.image, anchor=NW)
         
         self.playCanvas.create_text(450, 100, text="Jogando", font=("Impact", 80), fill = "white")
         
@@ -299,8 +333,8 @@ class ClientGUI(Tk):
 
         self.buttons = []
         for i in range(9):
-            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
-            button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 20 bold", fg="#EE4035", bg="white")
+            button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
+            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 60 bold", fg="#EE4035", bg="white")
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
 
@@ -459,8 +493,8 @@ class ClientGUI(Tk):
         if i == 7: movimento = "32"
         if i == 8: movimento = "33"
         
-        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
-        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
+        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
+        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
         
         try:
             message = sendMove(movimento)
