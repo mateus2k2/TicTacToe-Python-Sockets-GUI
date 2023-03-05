@@ -85,6 +85,7 @@ class ClientGUI(customtkinter.CTk):
         self.settingsPageFrame.pack_propagate(False)
         self.settingsPageFrame.configure(width=900, height=600)
         self.settingsCanvas = self.createCanvas(self.settingsPageFrame)
+        self.settingsCanvas.configure(bg="#1e1e1e")
         #self.settingsCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.settingsCanvas.create_text(450, 100, text="Configurações", font=("Impact", 80), fill = "white")
         self.settingsButtons()
@@ -108,7 +109,6 @@ class ClientGUI(customtkinter.CTk):
             customtkinter.set_default_color_theme("blue")
         elif self.cor.get() == "Verde":
             customtkinter.set_default_color_theme("green")
-
 
     def settingsButtons(self):
         self.settingsCanvas.create_text(450, 200, text="Volume", font=("Impact", 30), fill = "white")
@@ -159,13 +159,15 @@ class ClientGUI(customtkinter.CTk):
         self.createGamePageFrame.pack_propagate(False)
         self.createGamePageFrame.configure(width=900, height=600)
         self.createGameCanvas = self.createCanvas(self.createGamePageFrame)
+        self.createGameCanvas.configure(bg="#1e1e1e")
         #self.createGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.createGameCanvas.create_text(450, 100, text="Criar Jogo", font=("Impact", 80), fill = "white")
         self.createGameButtons()
 
     def createGameButtons(self):
         self.createGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
-        self.NickEntry = Entry(self.createGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
+        # self.NickEntry = Entry(self.createGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
+        self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400)
 
         def OkCallback():
             self.nick = self.NickEntry.get() 
@@ -200,6 +202,7 @@ class ClientGUI(customtkinter.CTk):
         self.waitingRoomPageFrame.configure(width=900, height=600)
 
         self.waitingRoomCanvas = self.createCanvas(self.waitingRoomPageFrame)
+        self.waitingRoomCanvas.configure(bg="#1e1e1e")
         #self.waitingRoomCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.waitingRoomCanvas.create_text(450, 100, text="Sala de Esperda: ", font=("Impact", 80), fill = "white")
         self.waitingRoomCanvas.create_text(450, 350, text= "ID: " + str(ID), font=("Impact", 40), fill = "white")
@@ -231,13 +234,15 @@ class ClientGUI(customtkinter.CTk):
         self.joinGamePageFrame.pack_propagate(False)
         self.joinGamePageFrame.configure(width=900, height=600)
         self.joinGameCanvas = self.createCanvas(self.joinGamePageFrame)
+        self.joinGameCanvas.configure(bg="#1e1e1e")
         #self.joinGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.joinGameCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
         self.joinGameButtons()
 
     def joinGameButtons(self):
         self.joinGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
-        self.NickEntry = Entry(self.joinGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
+        # self.NickEntry = Entry(self.joinGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
+        self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400)
         self.joinGameCanvas.create_window(450, 250, window=self.NickEntry)
 
         def OkCallback():
@@ -268,17 +273,18 @@ class ClientGUI(customtkinter.CTk):
         self.SendIDPageFrame.pack_propagate(False)
         self.SendIDPageFrame.configure(width=900, height=600)
         self.SendIDCanvas = self.createCanvas(self.SendIDPageFrame)
+        self.SendIDCanvas.configure(bg="#1e1e1e")
         #self.SendIDCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.SendIDCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
         
         self.SendIDCanvas.create_text(450, 200, text="Escolha ID:", font=("Impact", 30), fill = "white")
-        self.IDEntry = customtkinter.CTkEntry(self.SendIDCanvas, font=("Impact", 30), width=20)
+        self.IDEntry = customtkinter.CTkEntry(self.SendIDCanvas, font=("Impact", 30), width=400)
         self.SendIDCanvas.create_window(450, 250, window=self.IDEntry)
         
         def OkCallback():
             ID = self.IDEntry.get() # Get the value of the entry field
 
-            if(not all(digito.isdigit() for digito in ID) and len(ID) != 8):
+            if((not all(digito.isdigit() for digito in ID) and len(ID) != 8) or ID == ""):
                 messagebox.showinfo("Error", "ID invalido")
                 return
             
@@ -314,6 +320,7 @@ class ClientGUI(customtkinter.CTk):
         self.playCanvas.pack(fill=BOTH, expand=True)
         self.playCanvas.pack_propagate(False)
         #self.playCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.playCanvas.configure(bg="#1e1e1e")
         
         self.playCanvas.create_text(450, 100, text="Jogando", font=("Impact", 80), fill = "white")
         
@@ -327,17 +334,19 @@ class ClientGUI(customtkinter.CTk):
         self.playCanvas.lift(self.textoPlacarAponente)
 
         buttonFrame = Frame(self.playCanvas, width=30, height=15)
-        # meio x = 900 (largura do Frame) - 140 (Largura de todos os botões) / 2 = 330
-        # meio y = 600 (altura do Frame) - 140 (altura de todos os botões) / 2 = 180
-        buttonFrame.place(x=330, y=200) 
+        # meio x = 900 (largura do Frame) - 270 (Largura de todos os botões) / 2 = 315
+        # meio y = 600 (altura do Frame) - 270 (altura de todos os botões) / 2 = 165
+        buttonFrame.place(x=315, y=210) 
 
+        self.img = ImageTk.PhotoImage(Image.open("Images/settings.png").resize((1, 1)))
+        
         self.buttons = []
         for i in range(9):
-            button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED)
-            # button = Button(buttonFrame, width=10, height=5, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 60 bold", fg="#EE4035", bg="white")
+            # mudar posicionamento dos botões para tem um espaço entre eles e colocar as linhas entre eles
+            button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg="#1e1e1e", activebackground = "#1e1e1e", borderwidth=2)
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
-
+        
         self.playPageFrame.place(x=0, y=0)
 
         self.backButton = Button(self.playCanvas, text="Sair", font=("Impact", 30), command = self.quit)
@@ -452,7 +461,8 @@ class ClientGUI(customtkinter.CTk):
                 print("DEF")
                 printBoard()
                 position = recvGameState(1-self.simboloInt)
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
                 messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
                 self.countDerrotas += 1
 
@@ -460,7 +470,8 @@ class ClientGUI(customtkinter.CTk):
                 print("TIE")
                 printBoard()
                 position = recvGameState(1-self.simboloInt)
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
                 messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
                 self.countEmpates += 1
 
@@ -468,7 +479,8 @@ class ClientGUI(customtkinter.CTk):
                 print("VAL")
                 printBoard()
                 position = recvGameState(1-self.simboloInt)
-                self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                # self.buttons[position].config(text=simbolos[1 - self.simboloInt])
+                self.buttons[position].config(text=simbolos[1 - self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[1 - self.simboloInt])
             
             elif message == "INV":
                 print("INV")
@@ -493,8 +505,8 @@ class ClientGUI(customtkinter.CTk):
         if i == 7: movimento = "32"
         if i == 8: movimento = "33"
         
-        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, fg = corSimbulos[self.simboloInt])
-        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
+        self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED, disabledforeground = corSimbulos[self.simboloInt])
+        # self.buttons[i].config(text=simbolos[self.simboloInt], state=DISABLED)
         
         try:
             message = sendMove(movimento)
