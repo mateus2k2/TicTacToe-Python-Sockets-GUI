@@ -183,6 +183,14 @@ def play(sala):
         jogando = 1 - jogando
         oponente = 1 - oponente     
 
+def handleIA(sala):
+    try:
+        playIA(sala)
+    # Caso  tenha algum erro no jogo, o servidor encerra a sala
+    except:
+        print("Client Saiu")   
+        sala['jogador0'].close()
+        
 def playIA(sala):
     # ---------------------------------------------------------------
     sala['board'] =[['', '', ''],
@@ -229,7 +237,7 @@ def playIA(sala):
                 sala['jogador0'].send('INV'.encode('ascii'))
         
         if turnoDeQuem == 1:
-            time.sleep(2)
+            time.sleep(5)
             #boardMatrix, computerletter, theFirstPlayerNumber, turnNumber, difficulty
             movimento = int(IAObj.getComputerMove(sala['board'], sala['simbMaquina'], theFirstPlayerNumber, sala['jogadas'], sala['dificuldade']))         
 
@@ -249,9 +257,11 @@ def playIA(sala):
         # Envia o estado do jogo para os jogadores
 
         if win == True and turnoDeQuem == 0:
+            print("ENTROU1")
             sala['jogador0'].send('WIN'.encode('ascii')) 
             sala['jogador0'].send(str(movimento).encode('ascii'))
-        if win == True and turnoDeQuem == 1:
+        elif win == True and turnoDeQuem == 1:
+            print("ENTROU2")
             sala['jogador0'].send('DEF'.encode('ascii')) 
             sala['jogador0'].send(str(movimento).encode('ascii'))
         elif velha == True:
@@ -354,7 +364,7 @@ def joinRoomIA(client, address):
     print("\nSALA CRIADA")
     [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
 
-    playIA(salas[salas.__len__()-1])
+    handleIA(salas[salas.__len__()-1])
 
 def decide():
     while True:

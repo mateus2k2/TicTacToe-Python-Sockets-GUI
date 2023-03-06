@@ -10,7 +10,6 @@ import threading
 
 import sys
 import os
-
 client_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(client_dir)
 from client import *
@@ -373,9 +372,9 @@ class ClientGUI(customtkinter.CTk):
         for button in self.buttons:
             button.config(text= '', state=DISABLED)
 
-        self.countDerrotas = 0
-        self.countVitorias = 0
-        self.countEmpates = 0
+        # self.countDerrotas = 0
+        # self.countVitorias = 0
+        # self.countEmpates = 0
         
         resetBoad()
 
@@ -399,10 +398,10 @@ class ClientGUI(customtkinter.CTk):
         self.textoJogarEsperar = self.playCanvas.create_text(450, 180, text="Jogando", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoJogarEsperar)
         
-        self.textoPlacarMeu = self.playCanvas.create_text(225, 300, text="", font=("Impact", 20), fill= self.text_color)
+        self.textoPlacarMeu = self.playCanvas.create_text(200, 300, text="", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoPlacarMeu)
         
-        self.textoPlacarAponente = self.playCanvas.create_text(675, 300, text="", font=("Impact", 20), fill= self.text_color)
+        self.textoPlacarAponente = self.playCanvas.create_text(740, 300, text="", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoPlacarAponente)
 
         buttonFrame = Frame(self.playCanvas, width=30, height=15)
@@ -414,7 +413,7 @@ class ClientGUI(customtkinter.CTk):
         
         self.buttons = []
         for i in range(9):
-            button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg="#1e1e1e", activebackground = "#1e1e1e", borderwidth=2)
+            button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg= self.bg_color, activebackground = "#1e1e1e", borderwidth=2)
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
         
@@ -459,8 +458,17 @@ class ClientGUI(customtkinter.CTk):
                 self.turn = getTurn()
                 printBoard(); print()
 
-                self.playCanvas.itemconfig(self.textoPlacarMeu, text = self.nick + " = " + str(self.countVitorias)) # Atualiza o placar do jogador
-                self.playCanvas.itemconfig(self.textoPlacarAponente, text = str(self.countDerrotas) + " = " + self.nickOponente) # Atualiza o placar do oponente
+                self.playCanvas.itemconfig(self.textoPlacarMeu, 
+                                           text = "Voce → " + simbolos[self.simboloInt] + "\n" + 
+                                          "Nome → " + self.nick + "\n" + 
+                                          "pts → " + str(self.countVitorias), 
+                                          fill = corSimbulos[self.simboloInt]) # Atualiza o placar do jogador
+                
+                self.playCanvas.itemconfig(self.textoPlacarAponente, 
+                                           text = simbolos[1 - self.simboloInt] + " ← Oponente" + "\n" + 
+                                           self.nickOponente + " ← Nome" + "\n" + 
+                                           str(self.countDerrotas) + " ← pts", 
+                                           fill = corSimbulos[1 - self.simboloInt]) # Atualiza o placar do oponente
 
                 time.sleep(2)
 
@@ -513,6 +521,8 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.music_win = pygame.mixer.Sound("Sounds/vitoria.wav")
+            self.music_win.play()
             messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
             self.countVitorias += 1
             
@@ -521,6 +531,8 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.music_loss = pygame.mixer.Sound("Sounds/derrota.mp3")
+            self.music_loss.play()
             messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
             self.countDerrotas += 1
         
@@ -529,6 +541,8 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.music_tie = pygame.mixer.Sound("Sounds/empate.mp3")
+            self.music_tie.play()
             messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
             self.countEmpates += 1
         
@@ -575,6 +589,9 @@ class ClientGUI(customtkinter.CTk):
     def turnPlay(self, i):
         
         posicoes = ["11", "12", "13", "21", "22", "23", "31", "32", "33"]
+        
+        # for i, button in enumerate(self.buttons): # Passa por todos os botoes
+        #         button.config(state=DISABLED) # Desativa o botao
         
         try:
             message = sendMove(posicoes[i]) # Envia a jogada para o servidor
