@@ -419,7 +419,7 @@ class ClientGUI(customtkinter.CTk):
         
         self.playPageFrame.place(x=0, y=0)
 
-        self.backButton = Button(self.playCanvas, text="Sair", font=("Impact", 30), command = self.quit)
+        self.backButton = Button(self.playCanvas, text="Sair", font=("Impact", 30), command = self.destroy)
         self.playCanvas.create_window(450, 550, window=self.backButton)
 
     def quit(self):
@@ -513,7 +513,7 @@ class ClientGUI(customtkinter.CTk):
         else: # Se o jogo não for reiniciado
             print("Fim Game GUI")
             endGame()
-            self.quit()
+            self.destroy()
 
     def updateGui(self, message, simbolo):
         if message == "WIN":
@@ -521,9 +521,13 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
-            self.music_win = pygame.mixer.Sound("Sounds/vitoria.wav")
-            self.music_win.play()
+            pygame.mixer.pause()
+            music_win = pygame.mixer.Sound("Sounds/vitoria.wav")
+            music_win.play()
             messagebox.showinfo("Fim do Jogo", "Voce Ganhou")
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(1)
+            pygame.mixer.unpause()
             self.countVitorias += 1
             
         if message == "DEF":
@@ -531,9 +535,13 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
-            self.music_loss = pygame.mixer.Sound("Sounds/derrota.mp3")
-            self.music_loss.play()
+            pygame.mixer.pause()
+            music_loss = pygame.mixer.Sound("Sounds/derrota.mp3")
+            music_loss.play()
             messagebox.showinfo("Fim do Jogo", "Voce Perdeu")
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(1)
+            pygame.mixer.unpause()
             self.countDerrotas += 1
         
         elif message == "TIE":
@@ -541,9 +549,13 @@ class ClientGUI(customtkinter.CTk):
             printBoard()
             position = recvGameState(simbolo)
             self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            pygame.mixer.pause()
             self.music_tie = pygame.mixer.Sound("Sounds/empate.mp3")
             self.music_tie.play()
             messagebox.showinfo("Fim do Jogo", "Jogo Empatado")
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(1)
+            pygame.mixer.unpause()
             self.countEmpates += 1
         
         elif message == "VAL":
