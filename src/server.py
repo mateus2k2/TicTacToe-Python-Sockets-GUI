@@ -1,6 +1,8 @@
 import socket
 import threading
 import random
+from IA import IAOponent
+import time
 
 # Connection Data
 host = '127.0.0.1'
@@ -135,6 +137,7 @@ def play(sala):
             sala['jogadas'] += 1
         else:
             sala['jogador' + str(jogando)].send('INV'.encode('ascii'))
+            sala['jogador' + str(oponente)].send('INV'.encode('ascii'))
         
         # ---------------------------------------------------------------
         # Verifica se o jogo acabou
@@ -180,6 +183,104 @@ def play(sala):
         jogando = 1 - jogando
         oponente = 1 - oponente     
 
+def playIA(sala):
+    # ---------------------------------------------------------------
+    sala['board'] =[['', '', ''],
+                    ['', '', ''],
+                    ['', '', ''],]
+    sala['jogadas'] = 0 
+    movimento = ""
+    
+    IAObj = IAOponent()
+        
+    # ---------------------------------------------------------------
+    theFirstPlayerNumber  = random.randint(0, 1) # 0 Jogador 1 Maquina
+    turnoDeQuem = theFirstPlayerNumber
+    
+    # ---------------------------------------------------------------
+    # Envia o simbolo de cada jogador X (Quem começa) e O (Quem espera)
+    sala['simbJogador0'] = theFirstPlayerNumber        
+    sala['simbMaquina'] = 1 - theFirstPlayerNumber       
+    
+    sala['jogador0'].send(str(theFirstPlayerNumber).encode('ascii'))
+        
+    sala['jogador0'].send("Nick---------------------".encode('ascii'))
+    
+    while True:
+
+        # ---------------------------------------------------------------
+        # Envia Qual o turno de cada jogador
+
+        if turnoDeQuem == 0: sala['jogador0'].send('PLAY'.encode('ascii'))
+        if turnoDeQuem == 1: sala['jogador0'].send('WAIT'.encode('ascii'))
+        
+        # ---------------------------------------------------------------
+        # Recebe o movimento do jogador
+        
+        if turnoDeQuem == 0:
+            movimento = int(sala['jogador0'].recv(2).decode('ascii'))
+            linha = int(movimento // 10) - 1
+            coluna = int(movimento % 10) - 1
+
+            if(sala['board'][linha][coluna] == ''):
+                sala['board'][linha][coluna] = simbolo[sala['simbJogador0']]
+                sala['jogadas'] += 1
+            else:
+                sala['jogador0'].send('INV'.encode('ascii'))
+        
+        if turnoDeQuem == 1:
+            time.sleep(2)
+            #boardMatrix, computerletter, theFirstPlayerNumber, turnNumber, difficulty
+            movimento = int(IAObj.getComputerMove(sala['board'], sala['simbMaquina'], theFirstPlayerNumber, sala['jogadas'], sala['dificuldade']))         
+
+            linha = int(movimento // 10) - 1
+            coluna = int(movimento % 10) - 1
+
+            sala['board'][linha][coluna] = simbolo[sala['simbMaquina']]
+            sala['jogadas'] += 1
+        
+        # ---------------------------------------------------------------
+        # Verifica se o jogo acabou
+
+        win = checkWin(sala)
+        velha = checkVelha(sala)
+
+        # ---------------------------------------------------------------
+        # Envia o estado do jogo para os jogadores
+
+        if win == True and turnoDeQuem == 0:
+            sala['jogador0'].send('WIN'.encode('ascii')) 
+            sala['jogador0'].send(str(movimento).encode('ascii'))
+        if win == True and turnoDeQuem == 1:
+            sala['jogador0'].send('DEF'.encode('ascii')) 
+            sala['jogador0'].send(str(movimento).encode('ascii'))
+        elif velha == True:
+            sala['jogador0'].send('TIE'.encode('ascii')) 
+            sala['jogador0'].send(str(movimento).encode('ascii'))
+        else:
+            sala['jogador0'].send('VAL'.encode('ascii')) 
+            sala['jogador0'].send(str(movimento).encode('ascii'))
+
+        # ---------------------------------------------------------------
+        # Verificar se os dois jogadores querem continuar jogando depois de dar velha ou ganhar
+
+        if win or velha:
+            continuar1 = sala['jogador0'].recv(3).decode('ascii')
+
+            if continuar1 == "CNT":  
+                sala['jogador0'].send('CNT'.encode('ascii'))
+                resetGame(sala)
+                
+            elif continuar1 == "END":
+                sala['jogador0'].send('END'.encode('ascii'))
+                sala['jogador0'].close()
+                salas.remove(sala)
+                break
+        
+        # ---------------------------------------------------------------
+        # Troca de turno
+        turnoDeQuem = 1 - turnoDeQuem
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def joinRoom(client, address):
@@ -194,10 +295,19 @@ def joinRoom(client, address):
         client.send('IDRQ'.encode('ascii')) # Envia Requisição de ID
         ID = client.recv(8).decode('ascii') # Recebe o ID
         print("ID RECV: " + ID)
-        salaCompleta = next((sala for sala in salas if sala['ID'] == ID), None) # Procura a sala com o ID
-        if salaCompleta != None and (not ('jogador1' in salaCompleta)): # Se a sala existe e não está completa
-            client.send('IDOK'.encode('ascii')) # Envia confirmação de ID
-            break # Sai do loop
+        
+        if(not (ID == '--RAND--')):
+            salaCompleta = next((sala for sala in salas if sala['ID'] == ID), None) # Procura a sala com o ID
+            if salaCompleta != None and (not ('jogador1' in salaCompleta)): # Se a sala existe e não está completa
+                client.send('IDOK'.encode('ascii')) # Envia confirmação de ID
+                break # Sai do loop
+        
+        if(ID == '--RAND--'):
+            salaCompleta = next((sala for sala in salas if (not ('jogador1' in sala) and ('jogador0' in sala))), None)
+            if salaCompleta != None: # Se a sala existe e não está completa
+                client.send('IDOK'.encode('ascii')) # Envia confirmação de ID
+                break # Sai do loop
+            
         client.send('IDRQ'.encode('ascii')) # Se não envia mais Requisição de ID
 
     salaCompleta['jogador1'] = client # Adiciona o client do jogador na sala
@@ -227,6 +337,25 @@ def createRoom(client, address):
     print("\nSALA CRIADA")
     [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
 
+def joinRoomIA(client, address):
+    print("CONNECTED CREATE {}".format(str(address)))
+
+    client.send('NICK'.encode('ascii')) # Envia Requisição de nickname
+    nickname = client.recv(25).decode('ascii') # Recebe o nickname
+    print("NICK RECEBIDO: " + nickname)
+
+    client.send('DIFC'.encode('ascii')) # Envia Requisição de nickname
+    dificuldade = int(client.recv(1).decode('ascii')) # Recebe o nickname
+    print("DIFC RECEBIDO: " + str(dificuldade))
+        
+    # Cria uma novo item no vetor de dicionario de salas com o client do jogador 0 o nickname do jogador e o ID
+    salas.append({'jogador0': client, 'nickjogador0': nickname, 'dificuldade': int(dificuldade)}) 
+
+    print("\nSALA CRIADA")
+    [print(key,':',str(value)[:50]) for key, value in salas[salas.__len__()-1].items()]
+
+    playIA(salas[salas.__len__()-1])
+
 def decide():
     while True:
         print("---------------------------------------------------")
@@ -240,7 +369,7 @@ def decide():
         else:
             client.send('OK'.encode('ascii')) # Envia mensagem de servidor OK
         
-        escolha = client.recv(1024).decode('ascii') # Recebe a escolha do cliente
+        escolha = client.recv(6).decode('ascii') # Recebe a escolha do cliente
         
         if escolha == "JOIN": 
             print("JOIN")
@@ -250,6 +379,11 @@ def decide():
         elif escolha == "CREATE":
             print("CREATE")
             thread = threading.Thread(target=createRoom, args=(client, address,))
+            thread.start()
+            
+        elif escolha == "JOINIA": 
+            print("JOINIA")
+            thread = threading.Thread(target=joinRoomIA, args=(client, address,))
             thread.start()
 
 decide()

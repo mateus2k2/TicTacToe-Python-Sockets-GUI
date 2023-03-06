@@ -26,6 +26,8 @@ class ClientGUI(customtkinter.CTk):
         super().__init__()
         customtkinter.set_appearance_mode("System")
         customtkinter.set_default_color_theme("dark-blue")
+        self.text_color = "white"
+        self.bg_color = "#1e1e1e"
         self.title("Jogo da Velha")
         self.geometry("900x600")
         self.resizable(False, False)
@@ -87,9 +89,9 @@ class ClientGUI(customtkinter.CTk):
         self.settingsPageFrame.pack_propagate(False)
         self.settingsPageFrame.configure(width=900, height=600)
         self.settingsCanvas = self.createCanvas(self.settingsPageFrame)
-        self.settingsCanvas.configure(bg="#1e1e1e")
+        self.settingsCanvas.configure(bg=self.bg_color)
         #self.settingsCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.settingsCanvas.create_text(450, 100, text="Configurações", font=("Impact", 80), fill = "white")
+        self.settingsCanvas.create_text(450, 100, text="Configurações", font=("Impact", 80), fill = self.text_color)
         self.settingsButtons()
 
     def set_volume(self, val):
@@ -100,8 +102,12 @@ class ClientGUI(customtkinter.CTk):
         if self.tema.get() == "System":
             customtkinter.set_appearance_mode("System")
         elif self.tema.get() == "Light":
+            self.bg_color = "#dee4ed"
+            self.text_color = "#1e1e1e"
             customtkinter.set_appearance_mode("Light")
         elif self.tema.get() == "Dark":
+            self.text_color = "#dee4ed"
+            self.bg_color = "#1e1e1e"
             customtkinter.set_appearance_mode("Dark")
 
     def set_color(self, event):
@@ -113,16 +119,16 @@ class ClientGUI(customtkinter.CTk):
             customtkinter.set_default_color_theme("green")
 
     def settingsButtons(self):
-        self.settingsCanvas.create_text(450, 200, text="Volume", font=("Impact", 30), fill = "white")
-        self.volume = customtkinter.CTkSlider(self.settingsCanvas, from_=0, to=100, command= lambda event: self.set_volume(self.volume.get()))
+        self.settingsCanvas.create_text(450, 200, text="Volume", font=("Impact", 30), fill = self.text_color)
+        self.volume = customtkinter.CTkSlider(self.settingsCanvas, from_=0, to=100 , command= lambda event: self.set_volume(self.volume.get()))
         self.settingsCanvas.create_window(450, 250, window=self.volume)
-        self.settingsCanvas.create_text(450, 300, text="Tema", font=("Impact", 30), fill = "white")
-        self.tema = customtkinter.CTkComboBox(self.settingsCanvas, values=["System", "Light", "Dark"], command= lambda event: self.set_theme(self.tema.get()))
+        self.settingsCanvas.create_text(450, 300, text="Tema", font=("Impact", 30), fill = self.text_color)
+        self.tema = customtkinter.CTkComboBox(self.settingsCanvas, values=["", "System", "Light", "Dark"], command= lambda event: self.set_theme(self.tema.get()))
         self.settingsCanvas.create_window(450, 350, window=self.tema)
-        self.settingsCanvas.create_text(450, 400, text="Cor", font=("Impact", 30), fill = "white")
-        self.cor = customtkinter.CTkComboBox(self.settingsCanvas, values=["Azul-Escuro", "Azul", "Verde"], command= lambda event: self.set_color(self.cor.get()))
+        self.settingsCanvas.create_text(450, 400, text="Cor", font=("Impact", 30), fill = self.text_color)
+        self.cor = customtkinter.CTkComboBox(self.settingsCanvas, values=["", "Azul-Escuro", "Azul", "Verde"], command= lambda event: self.set_color(self.cor.get()))
         self.settingsCanvas.create_window(450, 450, window=self.cor)
-        self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
+        self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -133,23 +139,25 @@ class ClientGUI(customtkinter.CTk):
         self.menuFrame.pack_propagate(False)
         self.menuFrame.configure(width=900, height=600)
         self.menuCanvas = self.createCanvas(self.menuFrame)
-        self.menuCanvas.configure(bg="#1e1e1e")
+        self.menuCanvas.configure(bg=self.bg_color)
         #self.image = ImageTk.PhotoImage(Image.open("Images/board.jpg").resize((900, 600)))
         #self.menuCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.MenuButtons()
 
     def MenuButtons(self):
-        self.menuCanvas.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = "#dee4ed")
-        self.createGameButton = customtkinter.CTkButton(self.menuCanvas, text="Criar Jogo", font=("Impact", 30), command=self.createGameFrame)
+        self.menuCanvas.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = self.text_color)
+        self.createGameButton = customtkinter.CTkButton(self.menuCanvas, text="Criar Jogo", text_color= self.text_color,  font=("Impact", 30), command=self.createGameFrame)
         self.menuCanvas.create_window(450, 300, window=self.createGameButton)
-        self.joinGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo", font=("Impact", 30), command=self.joinGameFrame)
+        self.joinGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo", text_color= self.text_color,  font=("Impact", 30), command=self.joinGameFrame)
         self.menuCanvas.create_window(450, 400, window=self.joinGameButton)
-        self.exitButton = customtkinter.CTkButton(self.menuCanvas, text="Sair", font=("Impact", 30), command=self.destroy)
-        self.menuCanvas.create_window(450, 500, window=self.exitButton)
+        self.joinIAGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo IA", font=("Impact", 30), text_color=self.text_color, command=self.joinGameIAFrame)
+        self.menuCanvas.create_window(450, 500, window=self.joinIAGameButton)
+        self.exitButton = customtkinter.CTkButton(self.menuCanvas, text="Sair", text_color= self.text_color , font=("Impact", 30), command=self.destroy)
+        self.menuCanvas.create_window(820, 570, window=self.exitButton)
         self.settings_image = ImageTk.PhotoImage(Image.open("Images/settings.png").resize((25, 25)))
-        self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="Configurações", font=("Impact", 30),image=self.settings_image, compound="left", command=self.settingsFrame)
+        self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="Configurações", text_color= self.text_color, font=("Impact", 30),image=self.settings_image, compound="left", command=self.settingsFrame)
         #self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="",image=self.settings_image, command=self.settingsFrame, width=25, height=25)
-        self.menuCanvas.create_window(775, 570, window=self.settingsButton)
+        self.menuCanvas.create_window(125, 570, window=self.settingsButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -161,13 +169,13 @@ class ClientGUI(customtkinter.CTk):
         self.createGamePageFrame.pack_propagate(False)
         self.createGamePageFrame.configure(width=900, height=600)
         self.createGameCanvas = self.createCanvas(self.createGamePageFrame)
-        self.createGameCanvas.configure(bg="#1e1e1e")
+        self.createGameCanvas.configure(bg=self.bg_color)
         #self.createGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.createGameCanvas.create_text(450, 100, text="Criar Jogo", font=("Impact", 80), fill = "white")
+        self.createGameCanvas.create_text(450, 100, text="Criar Jogo", font=("Impact", 80), fill = self.text_color)
         self.createGameButtons()
 
     def createGameButtons(self):
-        self.createGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
+        self.createGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
         # self.NickEntry = Entry(self.createGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
         self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400)
 
@@ -186,10 +194,10 @@ class ClientGUI(customtkinter.CTk):
             self.waitingRoomGUI(IDVar) # Chama a tela de espera
 
         self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
-        self.createGameButton = customtkinter.CTkButton(self.createGameCanvas, text="Criar Jogo", font=("Impact", 30), command=OkCallback)
+        self.createGameButton = customtkinter.CTkButton(self.createGameCanvas, text="Criar Jogo", text_color=self.text_color, font=("Impact", 30), command=OkCallback)
         
         self.createGameCanvas.create_window(450, 400, window=self.createGameButton)
-        self.backButton = customtkinter.CTkButton(self.createGameCanvas, text="Voltar", font=("Impact", 30), image=self.back_image, compound="left", command=lambda: self.backToMenu(self.createGamePageFrame))
+        self.backButton = customtkinter.CTkButton(self.createGameCanvas, text="Voltar", font=("Impact", 30), text_color=self.text_color, image=self.back_image, compound="left", command=lambda: self.backToMenu(self.createGamePageFrame))
         
         self.createGameCanvas.create_window(450, 500, window=self.backButton)
 
@@ -206,9 +214,9 @@ class ClientGUI(customtkinter.CTk):
         self.waitingRoomCanvas = self.createCanvas(self.waitingRoomPageFrame)
         self.waitingRoomCanvas.configure(bg="#1e1e1e")
         #self.waitingRoomCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.waitingRoomCanvas.create_text(450, 100, text="Sala de Esperda: ", font=("Impact", 80), fill = "white")
-        self.waitingRoomCanvas.create_text(450, 350, text= "ID: " + str(ID), font=("Impact", 40), fill = "white")
-        self.waitingRoomCanvas.create_text(450, 450, text= "Esperando Outro Jogador", font=("Impact", 40), fill = "white")
+        self.waitingRoomCanvas.create_text(450, 100, text="Sala de Esperda: ", font=("Impact", 80), fill = self.text_color)
+        self.waitingRoomCanvas.create_text(450, 350, text= "ID: " + str(ID), font=("Impact", 40), fill = self.text_color)
+        self.waitingRoomCanvas.create_text(450, 450, text= "Esperando Outro Jogador", font=("Impact", 40), fill = self.text_color)
 
         self.loading = Image.open("images/loading.gif")
         self.loadingFrames = []
@@ -236,13 +244,13 @@ class ClientGUI(customtkinter.CTk):
         self.joinGamePageFrame.pack_propagate(False)
         self.joinGamePageFrame.configure(width=900, height=600)
         self.joinGameCanvas = self.createCanvas(self.joinGamePageFrame)
-        self.joinGameCanvas.configure(bg="#1e1e1e")
+        self.joinGameCanvas.configure(bg=self.bg_color)
         #self.joinGameCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.joinGameCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
+        self.joinGameCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = self.text_color)
         self.joinGameButtons()
 
     def joinGameButtons(self):
-        self.joinGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = "white")
+        self.joinGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
         # self.NickEntry = Entry(self.joinGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
         self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400)
         self.joinGameCanvas.create_window(450, 250, window=self.NickEntry)
@@ -261,9 +269,10 @@ class ClientGUI(customtkinter.CTk):
             joinGame(self.nick.ljust(25, "-")) # Manda o nick (com "-" para completar os 25 caracteres) para o servidor
             self.sendIDGUI() # Chama a tela de mandar o ID
 
-        self.joinGameButton = customtkinter.CTkButton(self.joinGameCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
+        self.joinGameButton = customtkinter.CTkButton(self.joinGameCanvas, text="Entrar ID", text_color=self.text_color, font=("Impact", 30), command = OkCallback)
         self.joinGameCanvas.create_window(450, 400, window=self.joinGameButton)
-        self.backButton = customtkinter.CTkButton(self.joinGameCanvas, text="Voltar", font=("Impact", 30), image=self.back_image, compound="left" , command=lambda: self.backToMenu(self.joinGamePageFrame))
+        
+        self.backButton = customtkinter.CTkButton(self.joinGameCanvas, text="Voltar", font=("Impact", 30), text_color= self.text_color, image=self.back_image, compound="left" , command=lambda: self.backToMenu(self.joinGamePageFrame))
         self.joinGameCanvas.create_window(450, 500, window=self.backButton)
 
     def sendIDGUI(self): 
@@ -277,29 +286,86 @@ class ClientGUI(customtkinter.CTk):
         self.SendIDCanvas = self.createCanvas(self.SendIDPageFrame)
         self.SendIDCanvas.configure(bg="#1e1e1e")
         #self.SendIDCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.SendIDCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = "white")
+        self.SendIDCanvas.create_text(450, 100, text="Entrar em Jogo", font=("Impact", 80), fill = self.text_color)
         
-        self.SendIDCanvas.create_text(450, 200, text="Escolha ID:", font=("Impact", 30), fill = "white")
+        self.SendIDCanvas.create_text(450, 200, text="Escolha ID:", font=("Impact", 30), fill = self.text_color)
         self.IDEntry = customtkinter.CTkEntry(self.SendIDCanvas, font=("Impact", 30), width=400)
         self.SendIDCanvas.create_window(450, 250, window=self.IDEntry)
         
-        def OkCallback():
+        def OkCallback(rand):
             ID = self.IDEntry.get() # Get the value of the entry field
 
-            if((not all(digito.isdigit() for digito in ID) and len(ID) != 8) or ID == ""): # Verifica se todos os caracteres sao numeros e se o tamanho é 8 e ele nao pode ser vazio
+            if(((not all(digito.isdigit() for digito in ID) and len(ID) != 8) or ID == "") and rand == False): # Verifica se todos os caracteres sao numeros e se o tamanho é 8 e ele nao pode ser vazio
                 messagebox.showinfo("Error", "ID invalido")
                 return
             
+            if rand == True: ID = "--RAND--" 
+                
             if sendID(ID) == False: # Verifica se o ID corresponde com o servidor 
-                messagebox.showinfo("Error", "Room is not Available")
+                messagebox.showinfo("Error", "ID invalido ou nenhuma sala Vazia")
                 return
 
             print("Jogar")
             self.play(self.joinGamePageFrame) # Chama a tela de jogo
             
+        self.joinRandGameButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar Rand", text_color=self.text_color, font=("Impact", 30), command=lambda: OkCallback(True))
+        self.SendIDCanvas.create_window(550, 400, window=self.joinRandGameButton)
+        
+        self.SendIDButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar", text_color = self.text_color, font=("Impact", 30), command=lambda: OkCallback(False))
+        self.SendIDCanvas.create_window(300, 400, window=self.SendIDButton)
 
-        self.SendIDButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar", font=("Impact", 30), command = OkCallback)
-        self.SendIDCanvas.create_window(450, 400, window=self.SendIDButton)
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+            
+    def joinGameIAFrame(self):
+        self.clickSound()
+        self.menuFrame.destroy()
+        self.joinGameIAPageFrame = customtkinter.CTkFrame(self)
+        self.joinGameIAPageFrame.pack()
+        self.joinGameIAPageFrame.pack_propagate(False)
+        self.joinGameIAPageFrame.configure(width=900, height=600)
+        self.joinGameIACanvas = self.createCanvas(self.joinGameIAPageFrame)
+        self.joinGameIACanvas.configure(bg=self.bg_color)
+        #self.joinGameIACanvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.joinGameIACanvas.create_text(450, 100, text="Entrar em Jogo IA", font=("Impact", 80), fill = self.text_color)
+        self.joinGameIAButtons()
+
+    def joinGameIAButtons(self):
+        self.joinGameIACanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
+        # self.NickEntry = Entry(self.joinGameIACanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
+        self.NickEntry = customtkinter.CTkEntry(self.joinGameIACanvas, font=("Impact", 30), width=400)
+        self.joinGameIACanvas.create_window(450, 250, window=self.NickEntry)
+        self.joinGameIACanvas.create_text(450, 325, text="Escolha a dificuldade:", font=("Impact", 30), fill = self.text_color)
+        self.dificuldade_box = customtkinter.CTkComboBox(self.joinGameIACanvas, values=["", "Iniciante", "Facil", "Intermediário", "Expert"])
+        self.joinGameIACanvas.create_window(450, 375, window=self.dificuldade_box)
+
+        def OkCallback():
+            
+            self.dificuldade = self.dificuldade_box.get()
+            self.nick = self.NickEntry.get()
+                
+            if(self.dificuldade == ""): 
+                messagebox.showinfo("Error", "Escolha a dificuldade") 
+                return 
+                    
+            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
+                messagebox.showinfo("Error", "nick invalido")
+                return
+            
+            if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
+                messagebox.showinfo("Error", "Server is not Running")
+                return 
+            
+
+            dict = {"Iniciante": "0", "Facil": "1", "Intermediário": "2", "Expert": "3"}
+            self.dificuldade = dict[self.dificuldade]
+
+            joinGameIA(self.nick.ljust(25, "-"), self.dificuldade) # Manda o nick (com "-" para completar os 25 caracteres) para o servidor
+            self.play(self.joinGameIAPageFrame) # Chama a tela de mandar o ID
+
+        self.joinGameButton = customtkinter.CTkButton(self.joinGameIACanvas, text="Entrar", font=("Impact", 30), text_color = self.text_color, command = OkCallback)
+        self.joinGameIACanvas.create_window(450, 425, window=self.joinGameButton)
+        self.backButton = customtkinter.CTkButton(self.joinGameIACanvas, text="Voltar", font=("Impact", 30), text_color=self.text_color, image=self.back_image, compound="left" , command=lambda: self.backToMenu(self.joinGameIAPageFrame))
+        self.joinGameIACanvas.create_window(450, 500, window=self.backButton)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -326,17 +392,17 @@ class ClientGUI(customtkinter.CTk):
         self.playCanvas.pack(fill=BOTH, expand=True)
         self.playCanvas.pack_propagate(False)
         #self.playCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.playCanvas.configure(bg="#1e1e1e")
+        self.playCanvas.configure(bg=self.bg_color)
         
-        self.playCanvas.create_text(450, 100, text="Jogando", font=("Impact", 80), fill = "white")
+        self.playCanvas.create_text(450, 100, text="Jogando", font=("Impact", 80), fill = self.text_color)
         
-        self.textoJogarEsperar = self.playCanvas.create_text(450, 180, text="Jogando", font=("Impact", 20), fill="white")
+        self.textoJogarEsperar = self.playCanvas.create_text(450, 180, text="Jogando", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoJogarEsperar)
         
-        self.textoPlacarMeu = self.playCanvas.create_text(225, 300, text="", font=("Impact", 20), fill="white")
+        self.textoPlacarMeu = self.playCanvas.create_text(225, 300, text="", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoPlacarMeu)
         
-        self.textoPlacarAponente = self.playCanvas.create_text(675, 300, text="", font=("Impact", 20), fill="white")
+        self.textoPlacarAponente = self.playCanvas.create_text(675, 300, text="", font=("Impact", 20), fill= self.text_color)
         self.playCanvas.lift(self.textoPlacarAponente)
 
         buttonFrame = Frame(self.playCanvas, width=30, height=15)

@@ -138,6 +138,22 @@ def connectToServer(ip, port):
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
+def joinGameIA(GUINick, dificultade):
+    client.send("JOINIA".encode('ascii')) # Manda join para o servidor
+    print("JOINIA")
+
+    message = client.recv(4).decode('ascii') # Recebe a resposta do servidor = NICK
+    nickname = GUINick
+    if message == 'NICK':
+        client.send(nickname.encode('ascii')) # Manda o nickname para o servidor
+        
+    message = client.recv(4).decode('ascii') # Recebe a resposta do servidor = NICK
+    nickname = GUINick
+    if message == 'DIFC':
+        client.send(dificultade.encode('ascii')) # Manda o nickname para o servidor
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def joinGame(GUINick):
     client.send("JOIN".encode('ascii')) # Manda join para o servidor
     print("JOIN")
