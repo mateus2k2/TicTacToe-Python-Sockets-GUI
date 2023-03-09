@@ -27,6 +27,7 @@ class ClientGUI(customtkinter.CTk):
         customtkinter.set_default_color_theme("dark-blue")
         self.text_color = "white"
         self.bg_color = "#1e1e1e"
+        self.loggedIn = False
         self.title("Jogo da Velha")
         self.geometry("900x600")
         self.resizable(False, False)
@@ -71,14 +72,14 @@ class ClientGUI(customtkinter.CTk):
         else:
             canvas.delete(self.loading_id)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
             
     def backToMenu(self, page):
         self.clickSound()
         page.destroy()
         self.createMenuFrame()
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------CONFIGURAÇÕES----------------------------------------------------------------------
 
     def settingsFrame(self):
         self.clickSound()
@@ -130,7 +131,7 @@ class ClientGUI(customtkinter.CTk):
         self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------MENU----------------------------------------------------------------------------------------------
 
     def createMenuFrame(self):
         self.menuFrame = customtkinter.CTkFrame(self)
@@ -146,19 +147,85 @@ class ClientGUI(customtkinter.CTk):
     def MenuButtons(self):
         self.menuCanvas.create_text(450, 100, text="Jogo da Velha", font=("Impact", 80), fill = self.text_color)
         self.createGameButton = customtkinter.CTkButton(self.menuCanvas, text="Criar Jogo", text_color= self.text_color,  font=("Impact", 30), command=self.createGameFrame)
-        self.menuCanvas.create_window(450, 300, window=self.createGameButton)
+        self.menuCanvas.create_window(450, 250, window=self.createGameButton)
         self.joinGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo", text_color= self.text_color,  font=("Impact", 30), command=self.joinGameFrame)
-        self.menuCanvas.create_window(450, 400, window=self.joinGameButton)
+        self.menuCanvas.create_window(450, 350, window=self.joinGameButton)
         self.joinIAGameButton = customtkinter.CTkButton(self.menuCanvas, text="Entrar em Jogo IA", font=("Impact", 30), text_color=self.text_color, command=self.joinGameIAFrame)
-        self.menuCanvas.create_window(450, 500, window=self.joinIAGameButton)
+        self.menuCanvas.create_window(450, 450, window=self.joinIAGameButton)
         self.exitButton = customtkinter.CTkButton(self.menuCanvas, text="Sair", text_color= self.text_color , font=("Impact", 30), command=self.destroy)
-        self.menuCanvas.create_window(820, 570, window=self.exitButton)
-        self.settings_image = ImageTk.PhotoImage(Image.open("Images/settings.png").resize((25, 25)))
-        self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="Configurações", text_color= self.text_color, font=("Impact", 30),image=self.settings_image, compound="left", command=self.settingsFrame)
-        #self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="",image=self.settings_image, command=self.settingsFrame, width=25, height=25)
-        self.menuCanvas.create_window(125, 570, window=self.settingsButton)
+        self.menuCanvas.create_window(450, 550, window=self.exitButton)
+        self.settings_image = ImageTk.PhotoImage(Image.open("Images/settings.png").resize((50, 50)))
+        #self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="Configurações", text_color= self.text_color, font=("Impact", 30),image=self.settings_image, compound="left", command=self.settingsFrame)
+        self.settingsButton = customtkinter.CTkButton(self.menuCanvas, text="",image=self.settings_image, command=self.settingsFrame, width=50, height=70)
+        self.menuCanvas.create_window(862, 560, window=self.settingsButton)
+        if self.loggedIn == False:
+            self.profile_image = ImageTk.PhotoImage(Image.open("Images/pessoa2.png").resize((50, 50)))
+            self.profileButton = customtkinter.CTkButton(self.menuCanvas, text="", text_color= self.text_color, font=("Impact", 30),image=self.profile_image, compound="left", width=50, height=70, command=self.loginFrame)
+            self.menuCanvas.create_window(793, 560, window=self.profileButton)
+        else:
+            self.profile_image = ImageTk.PhotoImage(Image.open("Images/rank.png").resize((50, 50)))
+            self.profileButton = customtkinter.CTkButton(self.menuCanvas, text="", text_color= self.text_color, font=("Impact", 30),image=self.profile_image, compound="left", width=50, height=70, command=self.rankFrame)
+            self.menuCanvas.create_window(793, 560, window=self.profileButton)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------LOGIN---------------------------------------------------------------------------------------
+
+    def loginFrame(self):
+        self.clickSound()
+        self.menuFrame.destroy()
+        self.loginPageFrame = customtkinter.CTkFrame(self)
+        self.loginPageFrame.pack()
+        self.loginPageFrame.pack_propagate(False)
+        self.loginPageFrame.configure(width=900, height=600)
+        self.loginCanvas = self.createCanvas(self.loginPageFrame)
+        self.loginCanvas.configure(bg=self.bg_color)
+        #self.profileCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.loginCanvas.create_text(450, 100, text="Login", font=("Impact", 80), fill = self.text_color)
+        self.loginButtons()
+
+
+    def loginButtons(self):
+        self.loginCanvas.create_text(450, 200, text="Nome:", font=("Impact", 30), fill = self.text_color)
+        self.usrNameEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
+        self.loginCanvas.create_window(450, 250, window=self.usrNameEntry)
+        self.loginCanvas.create_text(450, 300, text="Senha:", font=("Impact", 30), fill = self.text_color)
+        self.usrPassEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
+        self.loginCanvas.create_window(450, 350, window=self.usrPassEntry)
+        self.loginButton = customtkinter.CTkButton(self.loginCanvas, text="Entrar", text_color= self.text_color, font=("Impact", 30), command= self.login)
+        self.loginCanvas.create_window(450, 450, window=self.loginButton)
+        self.backButton = customtkinter.CTkButton(self.loginCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.loginPageFrame))
+        self.loginCanvas.create_window(815, 570, window=self.backButton)
+
+    def login(self):
+        self.clickSound()
+        self.usrName = self.usrNameEntry.get()
+        self.usrPass = self.usrPassEntry.get()
+        if self.usrName == "" or self.usrPass == "":
+            messagebox.showerror("Erro", "Preencha todos os campos")
+            return
+        self.loggedIn = True
+        self.backToMenu(self.loginPageFrame)
+
+
+#------------------------------------------------------RANK---------------------------------------------------------------------------------------
+
+    def rankFrame(self):
+        self.clickSound()
+        self.menuFrame.destroy()
+        self.rankPageFrame = customtkinter.CTkFrame(self)
+        self.rankPageFrame.pack()
+        self.rankPageFrame.pack_propagate(False)
+        self.rankPageFrame.configure(width=900, height=600)
+        self.rankCanvas = self.createCanvas(self.rankPageFrame)
+        self.rankCanvas.configure(bg=self.bg_color)
+        #self.profileCanvas.create_image(0, 0, image=self.image, anchor=NW)
+        self.rankCanvas.create_text(450, 100, text="Rank", font=("Impact", 80), fill = self.text_color)
+        self.rankButtons()
+
+    def rankButtons(self):
+        self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
+        self.rankCanvas.create_window(815, 570, window=self.backButton)
+
+#------------------------------------------------------CRIAR JOGO------------------------------------------------------------------------------------
 
     def createGameFrame(self):
         self.clickSound()
@@ -176,12 +243,14 @@ class ClientGUI(customtkinter.CTk):
     def createGameButtons(self):
         self.createGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
         # self.NickEntry = Entry(self.createGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
-        self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400)
+        if self.usrName == "":
+            self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400)
+            self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
 
         def OkCallback():
-            self.nick = self.NickEntry.get() 
+            self.nick = self.NickEntry.get()
             
-            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
+            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é invalido(maior que 25 ou vazio)
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
@@ -192,12 +261,10 @@ class ClientGUI(customtkinter.CTk):
             IDVar = createGame(self.nick.ljust(25, "-")) # Manda o nick (com "-" para completar os 25 caracteres) para o servidor e recebe o ID do jogo
             self.waitingRoomGUI(IDVar) # Chama a tela de espera
 
-        self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
         self.createGameButton = customtkinter.CTkButton(self.createGameCanvas, text="Criar Jogo", text_color=self.text_color, font=("Impact", 30), command=OkCallback)
-        
         self.createGameCanvas.create_window(450, 400, window=self.createGameButton)
+
         self.backButton = customtkinter.CTkButton(self.createGameCanvas, text="Voltar", font=("Impact", 30), text_color=self.text_color, image=self.back_image, compound="left", command=lambda: self.backToMenu(self.createGamePageFrame))
-        
         self.createGameCanvas.create_window(450, 500, window=self.backButton)
 
     def waitingRoomGUI(self, ID):
