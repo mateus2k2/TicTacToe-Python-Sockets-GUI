@@ -28,6 +28,7 @@ class ClientGUI(customtkinter.CTk):
         self.text_color = "white"
         self.bg_color = "#1e1e1e"
         self.loggedIn = False
+        self.usrName = ""
         self.title("Jogo da Velha")
         self.geometry("900x600")
         self.resizable(False, False)
@@ -189,18 +190,36 @@ class ClientGUI(customtkinter.CTk):
         self.loginCanvas.create_text(450, 300, text="Senha:", font=("Impact", 30), fill = self.text_color)
         self.usrPassEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
         self.loginCanvas.create_window(450, 350, window=self.usrPassEntry)
-        self.loginButton = customtkinter.CTkButton(self.loginCanvas, text="Entrar", text_color= self.text_color, font=("Impact", 30), command= self.login)
+        self.loginButton = customtkinter.CTkButton(self.loginCanvas, text="Entrar", text_color= self.text_color, font=("Impact", 30), command=lambda: self.login("LOGIN"))
         self.loginCanvas.create_window(450, 450, window=self.loginButton)
+        self.loginButton = customtkinter.CTkButton(self.loginCanvas, text="Cadastrar", text_color= self.text_color, font=("Impact", 30), command=lambda: self.login("REGIS"))
+        self.loginCanvas.create_window(450, 500, window=self.loginButton)
         self.backButton = customtkinter.CTkButton(self.loginCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.loginPageFrame))
         self.loginCanvas.create_window(815, 570, window=self.backButton)
-
-    def login(self):
+        
+    def login(self, option):
         self.clickSound()
         self.usrName = self.usrNameEntry.get()
         self.usrPass = self.usrPassEntry.get()
-        if self.usrName == "" or self.usrPass == "":
-            messagebox.showerror("Erro", "Preencha todos os campos")
+        
+        if(len(self.usrName) > 25 or self.usrName == "" or '-' in self.usrName): # Verifica se o nick é invalido(maior que 25 ou vazio)
+            messagebox.showinfo("Error", "nick invalido")
             return
+
+        if(len(self.usrPass) > 25 or self.usrPass == "" or '-' in self.usrPass): # Verifica se o nick é invalido(maior que 25 ou vazio)
+            messagebox.showinfo("Error", "Senha no formato invalido")
+            return
+        
+        if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
+            messagebox.showinfo("Error", "Server is not Running")
+            return 
+
+        retorno = sendLoginRegister(self.usrName.ljust(25, "-"), self.usrPass.ljust(25, "-"), option) 
+        
+        if(retorno == False):
+            messagebox.showinfo("Error", "Algo deu errado, tente novamente")
+            return
+        
         self.loggedIn = True
         self.backToMenu(self.loginPageFrame)
 
@@ -221,6 +240,9 @@ class ClientGUI(customtkinter.CTk):
         self.rankButtons()
 
     def rankButtons(self):
+        # getUserStats()
+        # getRankStats()
+        
         self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
         self.rankCanvas.create_window(815, 570, window=self.backButton)
 
@@ -241,15 +263,24 @@ class ClientGUI(customtkinter.CTk):
 
     def createGameButtons(self):
         self.createGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
-        # self.NickEntry = Entry(self.createGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
-        if self.usrName == "":
-            self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400)
-            self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
+        
+        self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400, placeholder_text_color = "#c0c0c0")
+        self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
+        
+        self.NickEntry.insert(0, 'Entre 1 e 25 caracteres')
+        
+        if self.loggedIn == True:
+            self.NickEntry.configure(state="disabled")
+            self.NickEntry.delete(0, "end") 
+            self.NickEntry.insert(0, self.usrName) 
 
         def OkCallback():
-            self.nick = self.NickEntry.get()
+            if self.loggedIn == False:
+                self.nick = self.NickEntry.get() 
+            else:
+                self.nick = self.usrName
             
-            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é invalido(maior que 25 ou vazio)
+            if(len(self.nick) > 25 or self.nick == "" or '-' in self.nick): # Verifica se o nick é invalido(maior que 25 ou vazio)
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
@@ -316,13 +347,24 @@ class ClientGUI(customtkinter.CTk):
 
     def joinGameButtons(self):
         self.joinGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
-        self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400, placeholder_text = "Entre 1 e 25 caracteres", placeholder_text_color = "#c0c0c0")
+        
+        self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400, placeholder_text_color = "#c0c0c0")
         self.joinGameCanvas.create_window(450, 250, window=self.NickEntry)
+        
+        self.NickEntry.insert(0, 'Entre 1 e 25 caracteres')
+        
+        if self.loggedIn == True:
+            self.NickEntry.configure(state="disabled")
+            self.NickEntry.delete(0, "end") 
+            self.NickEntry.insert(0, self.usrName) 
 
         def OkCallback():
-            self.nick = self.NickEntry.get() 
-            
-            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
+            if self.loggedIn == False:
+                self.nick = self.NickEntry.get() 
+            else:
+                self.nick = self.usrName      
+                  
+            if(len(self.nick) > 25 or self.nick == "" or '-' in self.nick): # Verifica se o nick é valido maior que 25 ou vazio
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
@@ -508,6 +550,7 @@ class ClientGUI(customtkinter.CTk):
         self.simboloInt = getSimbolo() # Recebe o simbolo do jogador, 0 ou 1 (X ou O)
         self.nickOponente = getNickOponente().replace('-', '') # Recebe o nick do oponente e remove os traços
         print("nickOponente: " + self.nickOponente)
+        sendLoginState(self.loggedIn)
         
         self.countDerrotas = 0
         self.countVitorias = 0

@@ -4,9 +4,6 @@ import socket
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # inicializa o jogo
-# board = [['', 'O', 'X'],
-#          ['X', 'O', 'X'],
-#          ['O', 'X', 'O'],]
 board = [['', '', ''],
          ['', '', ''],
          ['', '', ''],]
@@ -121,8 +118,11 @@ def getBoard():
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def connectToServer(ip, port):
+    global client
+    
     # Tenta conectar no servidor
     try:
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((ip, port))
         # Recebe a resposta do servidor = OK, FULL
         resposta = client.recv(1024).decode('ascii')
@@ -200,3 +200,60 @@ def waitingRoom(event):
         return True
     return False
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def sendLoginRegister(nickGUI, passwordGUI, option):
+    client.send(option.encode('ascii')) # Manda LOGIN/REG para o servidor
+    print(option)
+
+    nickname = nickGUI
+    message = client.recv(4).decode('ascii') 
+    print("MENSAGEM: " + message)
+    if message == 'NICK':
+        client.send(nickname.encode('ascii'))
+        
+    password = passwordGUI
+    message = client.recv(4).decode('ascii') 
+    print("MENSAGEM: " + message)
+    if message == 'PASS':
+        client.send(password.encode('ascii'))
+
+    message = client.recv(4).decode('ascii') 
+    client.close()
+
+    if(message == "LGOK" or message == "RGOK"):
+        return True
+    elif(message == "LGNO" or message == "RGNO"):
+        return False
+
+def sendLoginState(loggedIn):
+    if(loggedIn):
+        client.send("True".encode('ascii'))
+    else:
+        client.send("False".encode('ascii'))
+
+def getUserStats(nickGUI):
+    client.send("URSST".encode('ascii')) # Manda LOGIN/REG para o servidor
+
+    message = client.recv(4).decode('ascii') 
+    nickname = nickGUI
+    message = client.recv(4).decode('ascii') 
+    print("MENSAGEM: " + message)
+    if message == 'NICK':
+        client.send(nickname.encode('ascii'))
+        
+    message = client.recv(4).decode('ascii') 
+
+    client.close()
+    
+    return message
+
+def getRankStats():
+    client.send("RNKST".encode('ascii')) # Manda LOGIN/REG para o servidor
+
+    message = client.recv(4).decode('ascii') 
+
+    client.close()
+    
+    return message
+    

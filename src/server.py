@@ -3,6 +3,7 @@ import threading
 import random
 from IA import IAOponent
 import time
+import sqlite_utils
 
 # Connection Data
 host = '127.0.0.1'
@@ -73,8 +74,15 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador2.send(mensagem2.encode('ascii'))
     jogador1.send(str(movimento).encode('ascii'))
     jogador2.send(str(movimento).encode('ascii'))
+
+def updateScore(nick, option, db):
+    db.execute(
+        "UPDATE user_data SET {0} = {0} + 1 WHERE user_nickname = ?".format(option),
+        [nick]
+    )
     
 def handle(sala):
+    # play(sala)
     try:
         play(sala)
     # Caso  tenha algum erro no jogo, o servidor encerra a sala
@@ -83,17 +91,13 @@ def handle(sala):
         endGame(sala)
 
 def play(sala):
+    db = databaseRotine()
+    
     # ---------------------------------------------------------------
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
 
     # ---------------------------------------------------------------
-    # Inicializa o jogo
-    # sala['board'] = [[ '', 'O', 'X'], 
-    #                  ['X', 'O', 'X'],
-    #                  ['O', 'X', 'O'],]
-    # sala['jogadas'] = 8 
-    
     sala['board'] =[['', '', ''],
                     ['', '', ''],
                     ['', '', ''],]
@@ -106,7 +110,7 @@ def play(sala):
     oponente = 1 - jogando
 
     # ---------------------------------------------------------------
-    # Envia o simbolo de cada jogador X (Quem começa) e O (Quem espera)
+    # Envia o simbolo de cada jogador X (Quem começa 0) e O (Quem espera 1)
     sala['simbJogador' + str(jogando)] = 0        
     sala['simbJogador' + str(oponente)] = 1
 
@@ -116,6 +120,12 @@ def play(sala):
     # Envia o nick de cada jogador
     sala['jogador' + str(jogando)].send(sala['nickjogador' + str(oponente)].encode('ascii'))
     sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
+    
+    #Recebe o estado de login de cada jogador
+    loginState0 = bool(sala['jogador' + str(jogando)].recv(5).decode('ascii'))
+    loginState1 = bool(sala['jogador' + str(oponente)].recv(5).decode('ascii'))
+    sala['loginState' + str(jogando)] = loginState0
+    sala['loginState' + str(oponente)] = loginState1
     
     while True:
 
@@ -150,9 +160,13 @@ def play(sala):
 
         if win == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'WIN', 'DEF', movimento)
+            if sala['loginState' + str(jogando)]: updateScore(sala['nickjogador' + str(jogando)], "vitorias", db)
+            if sala['loginState' + str(oponente)]: updateScore(sala['nickjogador' + str(oponente)], "derrotas", db)
             # printBoard(sala)
         elif velha == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'TIE', 'TIE', movimento)
+            if sala['loginState' + str(jogando)]: updateScore(sala['nickjogador' + str(jogando)], "empates", db)
+            if sala['loginState' + str(oponente)]: updateScore(sala['nickjogador' + str(oponente)], "empates", db)
             # printBoard(sala)
         else:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'VAL', 'VAL', movimento)
@@ -364,6 +378,64 @@ def joinRoomIA(client, address):
 
     handleIA(salas[salas.__len__()-1])
 
+def login(client, address):
+    print("CONNECTED CREATE {}".format(str(address)))
+    db = databaseRotine()
+
+    client.send('NICK'.encode('ascii'))
+    nickname = client.recv(25).decode('ascii') 
+    print("NICK RECEBIDO: " + nickname)
+    
+    client.send('PASS'.encode('ascii'))
+    password = client.recv(25).decode('ascii') 
+    print("PASS RECEBIDO: " + password)
+    
+    user = db.execute("SELECT * FROM users WHERE nickname = ? AND password = ?", (nickname, password)).fetchone()
+
+    if user is None:
+        client.send('LGNO'.encode('ascii'))
+    else:
+        client.send('LGOK'.encode('ascii'))
+    
+    db.close()
+    client.close()
+
+def register(client, address):
+    print("CONNECTED CREATE {}".format(str(address)))
+    db = databaseRotine()
+
+    client.send('NICK'.encode('ascii'))
+    nickname = client.recv(25).decode('ascii') 
+    print("NICK RECEBIDO: " + nickname)
+
+    client.send('PASS'.encode('ascii'))
+    password = client.recv(25).decode('ascii') 
+    print("PASS RECEBIDO: " + password)
+
+    user_row = db.execute("SELECT * FROM users WHERE nickname = ?", [nickname]).fetchone()
+    
+    if user_row is None:
+        db["users"].insert_all([
+            {"nickname": nickname, "password": password},
+        ])
+        db["user_data"].insert_all([
+            {"user_nickname": nickname, "vitorias": 0, "derrotas": 0, "empates": 0},
+        ])
+        client.send('RGOK'.encode('ascii'))
+    else:
+        client.send('RGNO'.encode('ascii'))
+
+    db.close()
+    client.close()
+
+def userStats(client, address):
+    pass
+
+def rankStats(client, address):
+    pass
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 def decide():
     while True:
         print("---------------------------------------------------")
@@ -393,5 +465,34 @@ def decide():
             print("JOINIA")
             thread = threading.Thread(target=joinRoomIA, args=(client, address,))
             thread.start()
+            
+        elif escolha == "LOGIN":
+            print("LOGIN")
+            thread = threading.Thread(target=login, args=(client, address,))
+            thread.start()
+            
+        elif escolha == "REGIS":
+            print("REGIS")
+            thread = threading.Thread(target=register, args=(client, address,))
+            thread.start()
+            
+        elif escolha == "URSST":
+            print("URSST")
+            thread = threading.Thread(target=userStats, args=(client, address,))
+            thread.start()
+        
+        elif escolha == "RNKST":
+            print("RNKST")
+            thread = threading.Thread(target=rankStats, args=(client, address,))
+            thread.start()
+
+def databaseRotine():
+    arquivoDB = "database/db.db"
+    db = sqlite_utils.Database(arquivoDB)
+    
+    db.execute("CREATE TABLE IF NOT EXISTS users (nickname text PRIMARY KEY, password text)")
+    db.execute("CREATE TABLE IF NOT EXISTS user_data (id INTEGER PRIMARY KEY, user_nickname text, vitorias INTEGER, derrotas INTEGER, empates INTEGER, FOREIGN KEY(user_nickname) REFERENCES users(nickname))")
+    
+    return db
 
 decide()
