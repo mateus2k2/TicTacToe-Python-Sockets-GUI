@@ -212,7 +212,7 @@ def playIA(sala):
     
     sala['jogador0'].send(str(theFirstPlayerNumber).encode('ascii'))
         
-    sala['jogador0'].send("Nick---------------------".encode('ascii'))
+    sala['jogador0'].send("Maquina------------------".encode('ascii'))
     
     while True:
 
@@ -257,11 +257,9 @@ def playIA(sala):
         # Envia o estado do jogo para os jogadores
 
         if win == True and turnoDeQuem == 0:
-            print("ENTROU1")
             sala['jogador0'].send('WIN'.encode('ascii')) 
             sala['jogador0'].send(str(movimento).encode('ascii'))
         elif win == True and turnoDeQuem == 1:
-            print("ENTROU2")
             sala['jogador0'].send('DEF'.encode('ascii')) 
             sala['jogador0'].send(str(movimento).encode('ascii'))
         elif velha == True:

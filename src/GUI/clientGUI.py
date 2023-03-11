@@ -54,23 +54,23 @@ class ClientGUI(customtkinter.CTk):
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    def loadGifFrames(self):
-        try:
-            while True:
-                self.loadingFrames.append(ImageTk.PhotoImage(self.loading.copy()))
-                self.loading.seek(len(self.loadingFrames))
-        except EOFError:
-            pass
+    # def loadGifFrames(self):
+    #     try:
+    #         while True:
+    #             self.loadingFrames.append(ImageTk.PhotoImage(self.loading.copy()))
+    #             self.loading.seek(len(self.loadingFrames))
+    #     except EOFError:
+    #         pass
 
-    def playGif(self, canvas, event, frame_index=0):
-        self.loading_id = canvas.create_image(790, 490, anchor='nw', image=self.loadingFrames[frame_index])
+    # def playGif(self, canvas, event, frame_index=0):
+    #     self.loading_id = canvas.create_image(790, 490, anchor='nw', image=self.loadingFrames[frame_index])
 
-        nextFameIndex = (frame_index + 1) % len(self.loadingFrames)
+    #     nextFameIndex = (frame_index + 1) % len(self.loadingFrames)
 
-        if not (event.is_set()):
-            canvas.after(3, self.playGif, canvas, event, nextFameIndex)
-        else:
-            canvas.delete(self.loading_id)
+    #     if not (event.is_set()):
+    #         canvas.after(3, self.playGif, canvas, event, nextFameIndex)
+    #     else:
+    #         canvas.delete(self.loading_id)
 
 #-----------------------------------------------------------------------------------------------------------------------
             
@@ -182,7 +182,6 @@ class ClientGUI(customtkinter.CTk):
         self.loginCanvas.create_text(450, 100, text="Login", font=("Impact", 80), fill = self.text_color)
         self.loginButtons()
 
-
     def loginButtons(self):
         self.loginCanvas.create_text(450, 200, text="Nome:", font=("Impact", 30), fill = self.text_color)
         self.usrNameEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
@@ -284,16 +283,16 @@ class ClientGUI(customtkinter.CTk):
         self.waitingRoomCanvas.create_text(450, 350, text= "ID: " + str(ID), font=("Impact", 40), fill = self.text_color)
         self.waitingRoomCanvas.create_text(450, 450, text= "Esperando Outro Jogador", font=("Impact", 40), fill = self.text_color)
 
-        self.loading = Image.open("images/loading.gif")
-        self.loadingFrames = []
-        self.loadGifFrames()
+        # self.loading = Image.open("images/loading.gif")
+        # self.loadingFrames = []
+        # self.loadGifFrames()
 
         self.eventThread = threading.Event()
         waitingRoomThread = threading.Thread(target=waitingRoom, args=(self.eventThread,)) 
         waitingRoomThread.start()
         
         while not self.eventThread.is_set(): # Fica esperando o outro jogador
-            self.playGif(self.waitingRoomCanvas, self.eventThread, 0)
+            # self.playGif(self.waitingRoomCanvas, self.eventThread, 0)
             self.update()
 
 
@@ -317,8 +316,7 @@ class ClientGUI(customtkinter.CTk):
 
     def joinGameButtons(self):
         self.joinGameCanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
-        # self.NickEntry = Entry(self.joinGameCanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
-        self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400)
+        self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400, placeholder_text = "Entre 1 e 25 caracteres", placeholder_text_color = "#c0c0c0")
         self.joinGameCanvas.create_window(450, 250, window=self.NickEntry)
 
         def OkCallback():
@@ -397,8 +395,7 @@ class ClientGUI(customtkinter.CTk):
 
     def joinGameIAButtons(self):
         self.joinGameIACanvas.create_text(450, 200, text="Escolha seu Nick:", font=("Impact", 30), fill = self.text_color)
-        # self.NickEntry = Entry(self.joinGameIACanvas, font=("Impact", 30), width=20, textvariable="Maximo 25 Caracteres e Nao Pode Ser Vazio")
-        self.NickEntry = customtkinter.CTkEntry(self.joinGameIACanvas, font=("Impact", 30), width=400)
+        self.NickEntry = customtkinter.CTkEntry(self.joinGameIACanvas, font=("Impact", 30), width=400, placeholder_text = "Entre 1 e 25 caracteres", placeholder_text_color = "#c0c0c0")
         self.joinGameIACanvas.create_window(450, 250, window=self.NickEntry)
         self.joinGameIACanvas.create_text(450, 325, text="Escolha a dificuldade:", font=("Impact", 30), fill = self.text_color)
         self.dificuldade_box = customtkinter.CTkComboBox(self.joinGameIACanvas, values=["", "Iniciante", "Facil", "Intermediário", "Expert"])
@@ -480,7 +477,7 @@ class ClientGUI(customtkinter.CTk):
         
         self.buttons = []
         for i in range(9):
-            button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg= self.bg_color, activebackground = "#1e1e1e", borderwidth=2)
+            button = Button(buttonFrame, width=85, height=85, command=lambda i=i: self.turnPlay(i), state=DISABLED, font="cmr 80 bold", image=self.img, compound="left", bg= self.bg_color, activebackground = self.bg_color, borderwidth=2)
             button.grid(row=i // 3, column=i % 3)
             self.buttons.append(button)
         
@@ -640,9 +637,9 @@ class ClientGUI(customtkinter.CTk):
     
     def turnWait(self):
         try:
-            self.loading = Image.open("images/loading.gif")
-            self.loadingFrames = []
-            self.loadGifFrames()
+            # self.loading = Image.open("images/loading.gif")
+            # self.loadingFrames = []
+            # self.loadGifFrames()
             
             for i, button in enumerate(self.buttons): # Passa por todos os botoes
                 button.config(state=DISABLED) # Desativa o botao
