@@ -1,4 +1,5 @@
 import socket
+import json
 
 # Connecting To Server
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -227,33 +228,38 @@ def sendLoginRegister(nickGUI, passwordGUI, option):
         return False
 
 def sendLoginState(loggedIn):
+    print("loggedIn " + str(loggedIn))
     if(loggedIn):
-        client.send("True".encode('ascii'))
+        client.send("LOGIN".encode('ascii'))
     else:
-        client.send("False".encode('ascii'))
+        client.send("LOGNO".encode('ascii'))
 
 def getUserStats(nickGUI):
-    client.send("URSST".encode('ascii')) # Manda LOGIN/REG para o servidor
+    client.send("URSST".encode('ascii')) 
+    print("URSST: " + nickGUI)
 
     message = client.recv(4).decode('ascii') 
     nickname = nickGUI
-    message = client.recv(4).decode('ascii') 
     print("MENSAGEM: " + message)
     if message == 'NICK':
         client.send(nickname.encode('ascii'))
-        
-    message = client.recv(4).decode('ascii') 
+    
+    print("Recebendo dados do servidor")
+    user_data = client.recv(1024).decode()
+    user_dict = json.loads(user_data)
 
     client.close()
     
-    return message
+    return user_dict
 
 def getRankStats():
-    client.send("RNKST".encode('ascii')) # Manda LOGIN/REG para o servidor
+    client.send("RNKST".encode('ascii')) 
 
-    message = client.recv(4).decode('ascii') 
+    print("Recebendo dados do servidor")
+    table_json = client.recv(1024).decode()
+    table_data = json.loads(table_json)
 
     client.close()
     
-    return message
+    return table_data
     

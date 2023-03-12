@@ -240,8 +240,23 @@ class ClientGUI(customtkinter.CTk):
         self.rankButtons()
 
     def rankButtons(self):
-        # getUserStats()
-        # getRankStats()
+        if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
+            messagebox.showinfo("Error", "Server is not Running")
+            self.backToMenu(self.rankPageFrame)
+            return 
+        
+        dataFromUser = getUserStats(self.usrName.ljust(25, "-"))
+        print(dataFromUser)
+        
+        if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
+            messagebox.showinfo("Error", "Server is not Running")
+            self.backToMenu(self.rankPageFrame)
+            return 
+        
+        dataRank = getRankStats()
+        print(dataRank)
+        
+        self.backToMenu(self.rankPageFrame)
         
         self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
         self.rankCanvas.create_window(815, 570, window=self.backButton)

@@ -4,6 +4,7 @@ import random
 from IA import IAOponent
 import time
 import sqlite_utils
+import json
 
 # Connection Data
 host = '127.0.0.1'
@@ -76,22 +77,23 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador2.send(str(movimento).encode('ascii'))
 
 def updateScore(nick, option, db):
-    db.execute(
-        "UPDATE user_data SET {0} = {0} + 1 WHERE user_nickname = ?".format(option),
-        [nick]
-    )
+    if(option == "vitorias"): db.execute("UPDATE user_data SET vitorias = vitorias + 1 WHERE user_nickname = ?", [nick])
+    if(option == "derrotas"): db.execute("UPDATE user_data SET derrotas = derrotas + 1 WHERE user_nickname = ?", [nick])
+    if(option == "empates"): db.execute("UPDATE user_data SET empates = empates + 1 WHERE user_nickname = ?", [nick])
+    db.conn.commit()
     
 def handle(sala):
     # play(sala)
     try:
-        play(sala)
+        db = databaseRotine()
+        play(sala, db)
     # Caso  tenha algum erro no jogo, o servidor encerra a sala
     except:
         print("Client Saiu")   
+        db.cose()
         endGame(sala)
 
-def play(sala):
-    db = databaseRotine()
+def play(sala, db):
     
     # ---------------------------------------------------------------
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
@@ -122,10 +124,17 @@ def play(sala):
     sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
     
     #Recebe o estado de login de cada jogador
-    loginState0 = bool(sala['jogador' + str(jogando)].recv(5).decode('ascii'))
-    loginState1 = bool(sala['jogador' + str(oponente)].recv(5).decode('ascii'))
-    sala['loginState' + str(jogando)] = loginState0
-    sala['loginState' + str(oponente)] = loginState1
+    loginState1 = sala['jogador0'].recv(5).decode('ascii')
+    loginState0 = sala['jogador1'].recv(5).decode('ascii')
+    
+    sala['loginState0'] = loginState1
+    sala['loginState1'] = loginState0
+    
+    print("loginState0: " + str(loginState1))
+    print("loginState1: " + str(loginState0))
+    print(type(loginState1))
+    print(type(loginState0))
+    
     
     while True:
 
@@ -160,13 +169,13 @@ def play(sala):
 
         if win == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'WIN', 'DEF', movimento)
-            if sala['loginState' + str(jogando)]: updateScore(sala['nickjogador' + str(jogando)], "vitorias", db)
-            if sala['loginState' + str(oponente)]: updateScore(sala['nickjogador' + str(oponente)], "derrotas", db)
+            if sala['loginState' + str(jogando)] == "LOGIN": updateScore(sala['nickjogador' + str(jogando)], "vitorias", db)
+            if sala['loginState' + str(oponente)] == "LOGIN": updateScore(sala['nickjogador' + str(oponente)], "derrotas", db)
             # printBoard(sala)
         elif velha == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'TIE', 'TIE', movimento)
-            if sala['loginState' + str(jogando)]: updateScore(sala['nickjogador' + str(jogando)], "empates", db)
-            if sala['loginState' + str(oponente)]: updateScore(sala['nickjogador' + str(oponente)], "empates", db)
+            if sala['loginState' + str(jogando)] == "LOGIN": updateScore(sala['nickjogador' + str(jogando)], "empates", db)
+            if sala['loginState' + str(oponente)] == "LOGIN": updateScore(sala['nickjogador' + str(oponente)], "empates", db)
             # printBoard(sala)
         else:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'VAL', 'VAL', movimento)
@@ -429,10 +438,44 @@ def register(client, address):
     client.close()
 
 def userStats(client, address):
-    pass
+    print("CONNECTED CREATE {}".format(str(address)))
+    db = databaseRotine()
+    db.row_factory = dict_factory
+    print("userStats")
+
+    client.send('NICK'.encode('ascii'))
+    nickname = client.recv(25).decode('ascii') 
+    print("NICK RECEBIDO: " + nickname)
+    
+    user_row = db.execute("SELECT * FROM user_data WHERE user_nickname = ?", [nickname]).fetchone()
+
+    if user_row is not None:
+        print("Entrou no if")
+        user_dict = user_row
+        user_json = json.dumps(user_dict)
+        client.sendall(user_json.encode())
+    
+    db.close()
+    client.close()
 
 def rankStats(client, address):
-    pass
+    print("CONNECTED CREATE {}".format(str(address)))
+    db = databaseRotine()
+    db.row_factory = dict_factory
+    print("rankStats")
+
+    table_data = list(db["user_data"].rows)  
+    table_json = json.dumps(table_data)
+    client.send(table_json.encode())
+
+    db.close()
+    client.close()
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
