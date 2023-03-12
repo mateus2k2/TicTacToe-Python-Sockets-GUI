@@ -237,6 +237,8 @@ def playIA(sala):
         
     sala['jogador0'].send("Maquina------------------".encode('ascii'))
     
+    sala['jogador0'].recv(5).decode('ascii')
+    
     while True:
 
         # ---------------------------------------------------------------
@@ -440,7 +442,6 @@ def register(client, address):
 def userStats(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
     db = databaseRotine()
-    db.row_factory = dict_factory
     print("userStats")
 
     client.send('NICK'.encode('ascii'))
@@ -451,7 +452,7 @@ def userStats(client, address):
 
     if user_row is not None:
         print("Entrou no if")
-        user_dict = user_row
+        user_dict = list(user_row)
         user_json = json.dumps(user_dict)
         client.sendall(user_json.encode())
     
@@ -461,7 +462,6 @@ def userStats(client, address):
 def rankStats(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
     db = databaseRotine()
-    db.row_factory = dict_factory
     print("rankStats")
 
     table_data = list(db["user_data"].rows)  # convert generator object to list
@@ -470,12 +470,6 @@ def rankStats(client, address):
 
     db.close()
     client.close()
-
-def dict_factory(cursor, row):
-    d = {}
-    for idx, col in enumerate(cursor.description):
-        d[col[0]] = row[idx]
-    return d
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 

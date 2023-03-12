@@ -131,7 +131,29 @@ class ClientGUI(customtkinter.CTk):
         self.settingsCanvas.create_window(450, 450, window=self.cor)
         self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
+        
+        self.settingsCanvas.create_text(700, 200, text="IP:", font=("Impact", 30), fill = self.text_color)
+        self.IPEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30))
+        self.settingsCanvas.create_window(700, 250, window=self.IPEntry)
+        self.settingsCanvas.create_text(700, 300, text="Porta:", font=("Impact", 30), fill = self.text_color)
+        self.PortEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30))
+        self.settingsCanvas.create_window(700, 350, window=self.PortEntry)
+        self.loginButton = customtkinter.CTkButton(self.settingsCanvas, text="Mudar", text_color= self.text_color, font=("Impact", 30), command=self.modifieIpPort)
+        self.settingsCanvas.create_window(700, 450, window=self.loginButton)
 
+    def modifieIpPort(self):
+        self.clickSound()
+        self.IPEntryValue = self.IPEntry.get()
+        self.PortEntryValue = self.PortEntry.get()
+        
+        if(self.IPEntryValue == "" or self.PortEntryValue == "" or self.PortEntryValue.isnumeric() == False or self.IPEntryValue.replace('.', '').isnumeric() == False):
+            messagebox.showinfo("Error", "Valores Imvalidos")
+            return
+        else:
+            self.IP = self.IPEntryValue
+            self.Port = int(self.PortEntryValue)
+        
+        
 #------------------------------------------------MENU----------------------------------------------------------------------------------------------
 
     def createMenuFrame(self):
@@ -282,12 +304,12 @@ class ClientGUI(customtkinter.CTk):
         self.NickEntry = customtkinter.CTkEntry(self.createGameCanvas, font=("Impact", 30), width=400, placeholder_text_color = "#c0c0c0")
         self.createGameCanvas.create_window(450, 250, window=self.NickEntry)
         
-        self.NickEntry.insert(0, 'Entre 1 e 25 caracteres')
-        
         if self.loggedIn == True:
+            self.NickEntry.configure(placeholder_text = self.usrName)
             self.NickEntry.configure(state="disabled")
-            self.NickEntry.delete(0, "end") 
-            self.NickEntry.insert(0, self.usrName) 
+        else:
+            self.NickEntry.configure(placeholder_text = 'Entre 1 e 25 caracteres')
+            
 
         def OkCallback():
             if self.loggedIn == False:
@@ -366,12 +388,13 @@ class ClientGUI(customtkinter.CTk):
         self.NickEntry = customtkinter.CTkEntry(self.joinGameCanvas, font=("Impact", 30), width=400, placeholder_text_color = "#c0c0c0")
         self.joinGameCanvas.create_window(450, 250, window=self.NickEntry)
         
-        self.NickEntry.insert(0, 'Entre 1 e 25 caracteres')
         
         if self.loggedIn == True:
+            self.NickEntry.configure(placeholder_text = self.usrName)
             self.NickEntry.configure(state="disabled")
-            self.NickEntry.delete(0, "end") 
-            self.NickEntry.insert(0, self.usrName) 
+        else:
+            self.NickEntry.configure(placeholder_text = 'Entre 1 e 25 caracteres')
+            
 
         def OkCallback():
             if self.loggedIn == False:
