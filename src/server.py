@@ -76,12 +76,19 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador1.send(str(movimento).encode('ascii'))
     jogador2.send(str(movimento).encode('ascii'))
 
-def updateScore(nick, option, db):
-    if(option == "vitorias"): db.execute("UPDATE user_data SET vitorias = vitorias + 1 WHERE user_nickname = ?", [nick])
-    if(option == "derrotas"): db.execute("UPDATE user_data SET derrotas = derrotas + 1 WHERE user_nickname = ?", [nick])
-    if(option == "empates"): db.execute("UPDATE user_data SET empates = empates + 1 WHERE user_nickname = ?", [nick])
+def updateScore(nickname, option, db):
+    if(option == "vitorias"): db.execute("UPDATE user_data SET vitorias = vitorias + 1 WHERE user_nickname = ?", [nickname])
+    if(option == "derrotas"): db.execute("UPDATE user_data SET derrotas = derrotas + 1 WHERE user_nickname = ?", [nickname])
+    if(option == "empates"):  db.execute("UPDATE user_data SET empates = empates + 1 WHERE user_nickname = ?", [nickname])
     db.conn.commit()
-    
+
+def updateWinStreak(nickname, newWinStreek, db):
+    user_data = db["user_data"]
+    user = user_data.find_one(nickname=nickname)
+
+    current_win_streak = user.get("vitorias_seguidas", 0)
+    if newWinStreek > current_win_streak: user_data.update({"nickname": nickname}, {"$set": {"vitorias_seguidas": newWinStreek}})
+
 def handle(sala):
     # play(sala)
     try:
@@ -90,7 +97,7 @@ def handle(sala):
     # Caso  tenha algum erro no jogo, o servidor encerra a sala
     except:
         print("Client Saiu")   
-        db.cose()
+        db.close()
         endGame(sala)
 
 def play(sala, db):
@@ -129,11 +136,11 @@ def play(sala, db):
     
     sala['loginState0'] = loginState1
     sala['loginState1'] = loginState0
+    # sala['vitoriaSeguidas0'] = 0
+    # sala['vitoriaSeguidas1'] = 0
     
-    print("loginState0: " + str(loginState1))
-    print("loginState1: " + str(loginState0))
-    print(type(loginState1))
-    print(type(loginState0))
+    # print("loginState0: " + str(loginState1))
+    # print("loginState1: " + str(loginState0))
     
     
     while True:
@@ -169,17 +176,22 @@ def play(sala, db):
 
         if win == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'WIN', 'DEF', movimento)
+            
             if sala['loginState' + str(jogando)] == "LOGIN": updateScore(sala['nickjogador' + str(jogando)], "vitorias", db)
             if sala['loginState' + str(oponente)] == "LOGIN": updateScore(sala['nickjogador' + str(oponente)], "derrotas", db)
-            # printBoard(sala)
+            # sala['vitoriaSeguidas' + str(jogando)] += 1
+            # sala['vitoriaSeguidas' + str(oponente)] = 0
+
         elif velha == True:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'TIE', 'TIE', movimento)
+            
             if sala['loginState' + str(jogando)] == "LOGIN": updateScore(sala['nickjogador' + str(jogando)], "empates", db)
             if sala['loginState' + str(oponente)] == "LOGIN": updateScore(sala['nickjogador' + str(oponente)], "empates", db)
-            # printBoard(sala)
+            # sala['vitoriaSeguidas' + str(jogando)] = 0
+            # sala['vitoriaSeguidas' + str(oponente)] = 0
+
         else:
             sendGameState(sala['jogador' + str(jogando)], sala['jogador' + str(oponente)], 'VAL', 'VAL', movimento)
-            # printBoard(sala)
 
         # ---------------------------------------------------------------
         # Verificar se os dois jogadores querem continuar jogando depois de dar velha ou ganhar
@@ -189,12 +201,14 @@ def play(sala, db):
             continuar2 = sala['jogador' + str(oponente)].recv(3).decode('ascii')
 
             if continuar1 == "CNT" and continuar2 == "CNT":  
-                # print("\nRESET GAME")
                 sala['jogador' + str(jogando)].send('CNT'.encode('ascii'))
                 sala['jogador' + str(oponente)].send('CNT'.encode('ascii'))
                 resetGame(sala)
+                
             elif continuar1 == "END" or continuar2 == "END":
-                # print("END GAME")
+                # if sala['loginState' + str(jogando)] == "LOGIN": updateWinStreak(sala['nickjogador' + str(jogando)], sala['vitoriaSeguidas' + str(jogando)], db)
+                # if sala['loginState' + str(oponente)] == "LOGIN": updateWinStreak(sala['nickjogador' + str(oponente)], sala['vitoriaSeguidas' + str(oponente)], db)
+    
                 sala['jogador' + str(jogando)].send('END'.encode('ascii'))
                 sala['jogador' + str(oponente)].send('END'.encode('ascii'))
                 endGame(sala)
@@ -448,13 +462,12 @@ def userStats(client, address):
     nickname = client.recv(25).decode('ascii') 
     print("NICK RECEBIDO: " + nickname)
     
-    user_row = db.execute("SELECT * FROM user_data WHERE user_nickname = ?", [nickname]).fetchone()
+    user = db.execute("SELECT * FROM user_data WHERE user_nickname = ?", [nickname]).fetchone()
 
-    if user_row is not None:
-        print("Entrou no if")
-        user_dict = list(user_row)
-        user_json = json.dumps(user_dict)
-        client.sendall(user_json.encode())
+    if user is not None:
+        userDict = list(user)
+        userJson = json.dumps(userDict)
+        client.sendall(userJson.encode())
     
     db.close()
     client.close()

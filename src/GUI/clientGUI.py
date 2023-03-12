@@ -133,25 +133,33 @@ class ClientGUI(customtkinter.CTk):
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
         
         self.settingsCanvas.create_text(700, 200, text="IP:", font=("Impact", 30), fill = self.text_color)
-        self.IPEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30))
+        self.IPEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
         self.settingsCanvas.create_window(700, 250, window=self.IPEntry)
         self.settingsCanvas.create_text(700, 300, text="Porta:", font=("Impact", 30), fill = self.text_color)
-        self.PortEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30))
+        self.PortEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
         self.settingsCanvas.create_window(700, 350, window=self.PortEntry)
         self.loginButton = customtkinter.CTkButton(self.settingsCanvas, text="Mudar", text_color= self.text_color, font=("Impact", 30), command=self.modifieIpPort)
         self.settingsCanvas.create_window(700, 450, window=self.loginButton)
+        
+        self.IPEntry.configure(placeholder_text = host)
+        self.PortEntry.configure(placeholder_text = port)
 
     def modifieIpPort(self):
-        self.clickSound()
-        self.IPEntryValue = self.IPEntry.get()
-        self.PortEntryValue = self.PortEntry.get()
+        global host, port
         
-        if(self.IPEntryValue == "" or self.PortEntryValue == "" or self.PortEntryValue.isnumeric() == False or self.IPEntryValue.replace('.', '').isnumeric() == False):
+        self.clickSound()
+        IPEntryValue = self.IPEntry.get()
+        PortEntryValue = self.PortEntry.get()
+        
+        if(IPEntryValue == "" or PortEntryValue == "" or PortEntryValue.isnumeric() == False or IPEntryValue.replace('.', '').isnumeric() == False):
             messagebox.showinfo("Error", "Valores Imvalidos")
             return
         else:
-            self.IP = self.IPEntryValue
-            self.Port = int(self.PortEntryValue)
+            host = IPEntryValue
+            port = int(PortEntryValue)
+        
+        self.IPEntry.configure(placeholder_text = host)
+        self.PortEntry.configure(placeholder_text = port)
         
         
 #------------------------------------------------MENU----------------------------------------------------------------------------------------------
@@ -640,6 +648,7 @@ class ClientGUI(customtkinter.CTk):
             self.quit()
 
     def endGameGUI(self):
+        self.playCanvas.itemconfig(self.textoJogarEsperar, text="ESPERANDO RESPOSTA PARA REINICIAR O JOGO")
         response = messagebox.askyesno("Fim do jogo", "Reiniciar o jogo?") # Pergunta se o jogador quer jogar novamente
 
         event = threading.Event()
