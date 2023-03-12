@@ -464,7 +464,7 @@ def rankStats(client, address):
     db.row_factory = dict_factory
     print("rankStats")
 
-    table_data = list(db["user_data"].rows)  
+    table_data = list(db["user_data"].rows)  # convert generator object to list
     table_json = json.dumps(table_data)
     client.send(table_json.encode())
 

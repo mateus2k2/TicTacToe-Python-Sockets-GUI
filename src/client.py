@@ -2,7 +2,7 @@ import socket
 import json
 
 # Connecting To Server
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client = None
 
 # inicializa o jogo
 board = [['', '', ''],

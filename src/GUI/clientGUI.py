@@ -255,11 +255,11 @@ class ClientGUI(customtkinter.CTk):
         
         dataRank = getRankStats()
         print(dataRank)
-        
-        self.backToMenu(self.rankPageFrame)
-        
+                
         self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
         self.rankCanvas.create_window(815, 570, window=self.backButton)
+
+        self.backToMenu(self.rankPageFrame)
 
 #------------------------------------------------------CRIAR JOGO------------------------------------------------------------------------------------
 
