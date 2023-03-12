@@ -12,3 +12,6 @@ serverGUI:
 
 server:
 	@clear && cd ./src && python server.py
+
+db:
+	@clear && cd ./testes && python db.py
