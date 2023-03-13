@@ -64,13 +64,6 @@ def endGameDecide(response, event, fileResultado):
         continuar = 'END'
     # Envia CNT ou END para o servidor
     client.send(continuar.encode('ascii'))
-
-    # Se continuar for END entao o jogador decidiu acabar o jogo então pode sair
-    if continuar == "END":
-        print("FIM JOGO")
-        event.set()
-        fileResultado.put(True)
-        return True
     
     # Se continuar não for END entao o jogador precisar esperar a  resposta do servidor para saber se outro jogador quer continuar 
     print("ESPERANDO RESPOSTA SERVER")
@@ -82,6 +75,13 @@ def endGameDecide(response, event, fileResultado):
         event.set()
         fileResultado.put(False)
         return False
+    
+    # Se continuar for END entao o jogador decidiu acabar o jogo então pode sair
+    if continuar == "END":
+        print("FIM JOGO")
+        event.set()
+        fileResultado.put(True)
+        return True
 
 def getNickOponente():
     nicknameOpodente = client.recv(25).decode('ascii')

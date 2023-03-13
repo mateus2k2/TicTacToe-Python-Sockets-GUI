@@ -371,7 +371,6 @@ class ClientGUI(customtkinter.CTk):
             # self.playGif(self.waitingRoomCanvas, self.eventThread, 0)
             self.update()
 
-
         print("Jogar")
         self.play(self.waitingRoomPageFrame) # Chama a tela de jogo
 
@@ -458,7 +457,7 @@ class ClientGUI(customtkinter.CTk):
                 return
 
             print("Jogar")
-            self.play(self.joinGamePageFrame) # Chama a tela de jogo
+            self.play(self.SendIDPageFrame) # Chama a tela de jogo
             
         self.joinRandGameButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar Rand", text_color=self.text_color, font=("Impact", 30), command=lambda: OkCallback(True))
         self.SendIDCanvas.create_window(550, 400, window=self.joinRandGameButton)
@@ -571,22 +570,15 @@ class ClientGUI(customtkinter.CTk):
         
         self.playPageFrame.place(x=0, y=0)
 
-        self.backButton = Button(self.playCanvas, text="Sair", font=("Impact", 30), command = self.destroy)
+        self.backButton = customtkinter.CTkButton(self.playCanvas, text="Menu", font=("Impact", 30), command = self.quit)
         self.playCanvas.create_window(450, 550, window=self.backButton)
 
     def quit(self):
-        # try:
-        #     print("Quit Function")
-        #     endGame()
-        #     self.destroy()
-        #     sys.exit()
-        # except Exception as e:
-        #     print("Error in quit function:", e)
-
+        # self.destroy()
+        # sys.exit()
         print("Quit Function")
         endGame()
-        self.destroy()
-        sys.exit()
+        self.backToMenu(self.playPageFrame)
 
     def play(self, frame):
         self.createPlayFrame(frame)
@@ -666,8 +658,7 @@ class ClientGUI(customtkinter.CTk):
             self.resetGameGUI()
         else: # Se o jogo não for reiniciado
             print("Fim Game GUI")
-            endGame()
-            self.destroy()
+            self.quit()
 
     def updateGui(self, message, simbolo):
         if message == "WIN":
