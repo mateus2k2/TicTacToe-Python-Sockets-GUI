@@ -1,3 +1,15 @@
+import sys
+import os
+client_dir = os.path.join(os.path.dirname(__file__), "..")
+sys.path.append(client_dir)
+from client import *
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
+
+import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter')
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------
+
 from tkinter import *
 from tkinter import messagebox
 import customtkinter
@@ -7,12 +19,6 @@ import pygame
 import time
 from queue import Queue
 import threading
-
-import sys
-import os
-client_dir = os.path.join(os.path.dirname(__file__), "..")
-sys.path.append(client_dir)
-from client import *
 
 simbolos = ['X', 'O']
 corSimbulos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
@@ -371,6 +377,8 @@ class ClientGUI(customtkinter.CTk):
             # self.playGif(self.waitingRoomCanvas, self.eventThread, 0)
             self.update()
 
+        waitingRoomThread.join()
+        
         print("Jogar")
         self.play(self.waitingRoomPageFrame) # Chama a tela de jogo
 
@@ -570,10 +578,10 @@ class ClientGUI(customtkinter.CTk):
         
         self.playPageFrame.place(x=0, y=0)
 
-        self.backButton = customtkinter.CTkButton(self.playCanvas, text="Menu", font=("Impact", 30), command = self.quit)
+        self.backButton = customtkinter.CTkButton(self.playCanvas, text="Menu", font=("Impact", 30), command = self.quitFunc)
         self.playCanvas.create_window(450, 550, window=self.backButton)
 
-    def quit(self):
+    def quitFunc(self):
         # self.destroy()
         # sys.exit()
         print("Quit Function")
@@ -637,7 +645,7 @@ class ClientGUI(customtkinter.CTk):
 
         except Exception:
             self.playing = False
-            self.quit()
+            self.quitFunc()
 
     def endGameGUI(self):
         self.playCanvas.itemconfig(self.textoJogarEsperar, text="ESPERANDO RESPOSTA PARA REINICIAR O JOGO")
@@ -651,6 +659,7 @@ class ClientGUI(customtkinter.CTk):
         while not event.wait(1): # Espera a thread terminar
             self.update()
 
+        endGameDecideThread.join()
         self.playing = not fileResultado.get() # Se o jogo não for reiniciado, a variavel playing é setada para False
 
         if(self.playing == True): # Se o jogo for reiniciado
@@ -658,7 +667,7 @@ class ClientGUI(customtkinter.CTk):
             self.resetGameGUI()
         else: # Se o jogo não for reiniciado
             print("Fim Game GUI")
-            self.quit()
+            self.quitFunc()
 
     def updateGui(self, message, simbolo):
         if message == "WIN":
@@ -711,7 +720,7 @@ class ClientGUI(customtkinter.CTk):
         
         elif message == "INV":
             print("INV")
-            self.quit()
+            self.quitFunc()
 
         if message in ["DEF", "TIE", "WIN"]:
             self.endGameGUI()
@@ -733,6 +742,8 @@ class ClientGUI(customtkinter.CTk):
             while not event.is_set():
                 # self.playGif(self.playCanvas, event, 0)
                 self.update()
+            
+            waitingRoomThread.join()
             
             message = fileResultado.get() # Pega a mensagem recebida do servidor na thread
 
@@ -758,11 +769,11 @@ class ClientGUI(customtkinter.CTk):
             self.buttonPressed.set(True) # Seta a variavel buttonPressed para True para que o loop principal posso continuar 
 
         except:
-            self.quit()
+            self.quitFunc()
         
 
-if __name__ == "__main__":
-    client = ClientGUI()
-    client.mainloop()
-    sys.exit()
+client = ClientGUI()
+client.mainloop()
+print("Fim do jogo")
+sys.exit()
 
