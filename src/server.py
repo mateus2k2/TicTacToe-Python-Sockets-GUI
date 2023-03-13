@@ -391,8 +391,8 @@ def joinRoomIA(client, address):
     nickname = client.recv(25).decode('ascii') # Recebe o nickname
     print("NICK RECEBIDO: " + nickname)
 
-    client.send('DIFC'.encode('ascii')) # Envia Requisição de nickname
-    dificuldade = int(client.recv(1).decode('ascii')) # Recebe o nickname
+    client.send('DIFC'.encode('ascii')) # Envia Requisição de dificuldade
+    dificuldade = int(client.recv(1).decode('ascii')) # Recebe a dificuldade
     print("DIFC RECEBIDO: " + str(dificuldade))
         
     # Cria uma novo item no vetor de dicionario de salas com o client do jogador 0 o nickname do jogador e o ID

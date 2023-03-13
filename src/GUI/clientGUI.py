@@ -3,10 +3,11 @@ import os
 client_dir = os.path.join(os.path.dirname(__file__), "..")
 sys.path.append(client_dir)
 from client import *
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
 import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter')
+
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -505,7 +506,7 @@ class ClientGUI(customtkinter.CTk):
                 messagebox.showinfo("Error", "Escolha a dificuldade") 
                 return 
                     
-            if(len(self.nick) > 25 or self.nick == ""): # Verifica se o nick é valido maior que 25 ou vazio
+            if(len(self.nick) > 25 or self.nick == "" or "-" in self.nick): # Verifica se o nick é valido maior que 25 ou vazio
                 messagebox.showinfo("Error", "nick invalido")
                 return
             
