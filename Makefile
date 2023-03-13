@@ -15,3 +15,12 @@ server:
 
 db:
 	@clear && cd ./testes && python db.py
+
+
+pulse:
+	@clear && cd "C:\Users\mateu\Downloads\FACULDADE\1-COMP\4-Periodo\REDES\TPs\TP1\pulseaudio\bin" && ./pulseaudio.exe
+
+audioVideo:
+	@clear && bash 
+	@export DISPLAY="$(grep nameserver /etc/resolv.conf | sed 's/nameserver //'):0" 
+	@export PULSE_SERVER=tcp:$(grep nameserver /etc/resolv.conf | awk '{print $2}');

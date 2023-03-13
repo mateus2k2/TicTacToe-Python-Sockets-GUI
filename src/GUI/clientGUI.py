@@ -9,10 +9,12 @@ warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter')
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 from tkinter import *
 from tkinter import messagebox
+from tkinter.font import Font
 import customtkinter
 from PIL import ImageTk, Image
 import pygame
@@ -42,6 +44,10 @@ class ClientGUI(customtkinter.CTk):
         pygame.mixer.init()
         self.play_music()
         self.back_image = ImageTk.PhotoImage(Image.open("Images/back.png").resize((25, 25)))
+        
+        font_path = "fonts/impact.ttf"
+        self.fontLoad = Font(family="My Custom Font", size=12, name=font_path)
+        
         self.createMenuFrame()
 
     def createCanvas(self, master):
@@ -273,8 +279,19 @@ class ClientGUI(customtkinter.CTk):
         self.rankCanvas = self.createCanvas(self.rankPageFrame)
         self.rankCanvas.configure(bg=self.bg_color)
         #self.profileCanvas.create_image(0, 0, image=self.image, anchor=NW)
-        self.rankCanvas.create_text(450, 100, text="Rank", font=("Impact", 80), fill = self.text_color)
+        self.rankCanvas.create_text(450, 75, text="Rank", font=("Impact", 80), fill = self.text_color)
         self.rankButtons()
+        self.rankCanvas.create_text(100, 150, text="Name", font=("Impact", 25), fill = self.text_color)
+        self.rankCanvas.create_line(10, 175, 800, 175, fill = self.text_color)
+        self.rankCanvas.create_line(50,150, 25, 800, fill = self.text_color)
+        i = 0
+        j = 1
+        self.dataRank = sorted(self.dataRank, key=lambda k: k['vitorias'], reverse=True)
+        for account in range(len(self.dataRank)):
+            self.rankCanvas.create_text(25, 200+i, text = str(j), font= ('Impact', 25), fill = self.text_color)
+            self.rankCanvas.create_text(100, 200+i, text = self.dataRank[account]['user_nickname'].replace('-', ''), font= ('Impact', 25), fill = self.text_color)
+            i = i+50
+            j = j+1
 
     def rankButtons(self):
         if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
@@ -282,21 +299,21 @@ class ClientGUI(customtkinter.CTk):
             self.backToMenu(self.rankPageFrame)
             return 
         
-        dataFromUser = getUserStats(self.usrName.ljust(25, "-"))
-        print(dataFromUser)
+        self.dataFromUser = getUserStats(self.usrName.ljust(25, "-"))
+        print(self.dataFromUser)
         
         if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
             messagebox.showinfo("Error", "Server is not Running")
             self.backToMenu(self.rankPageFrame)
             return 
         
-        dataRank = getRankStats()
-        print(dataRank)
-                
+        self.dataRank = getRankStats()
+        print(self.dataRank)
+
+        self.usrName.replace('-', '')
+        
         self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
         self.rankCanvas.create_window(815, 570, window=self.backButton)
-
-        self.backToMenu(self.rankPageFrame)
 
 #------------------------------------------------------CRIAR JOGO------------------------------------------------------------------------------------
 
