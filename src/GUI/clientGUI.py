@@ -14,6 +14,7 @@ os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
 from tkinter import *
 from tkinter import messagebox
+from tkinter import ttk
 from tkinter.font import Font
 import customtkinter
 from PIL import ImageTk, Image
@@ -142,20 +143,38 @@ class ClientGUI(customtkinter.CTk):
         self.settingsCanvas.create_text(450, 400, text="Cor", font=("Impact", 30), fill = self.text_color)
         self.cor = customtkinter.CTkComboBox(self.settingsCanvas, values=["", "Azul-Escuro", "Azul", "Verde"], command= lambda event: self.set_color(self.cor.get()))
         self.settingsCanvas.create_window(450, 450, window=self.cor)
+        self.ConectionButton = customtkinter.CTkButton(self.settingsCanvas, text="Conexões", text_color= self.text_color, font=("Impact", 30), command=self.conectionSettingsFrame)
+        self.settingsCanvas.create_window(450, 550, window=self.ConectionButton)
         self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
-        
-        self.settingsCanvas.create_text(700, 200, text="IP:", font=("Impact", 30), fill = self.text_color)
-        self.IPEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
-        self.settingsCanvas.create_window(700, 250, window=self.IPEntry)
-        self.settingsCanvas.create_text(700, 300, text="Porta:", font=("Impact", 30), fill = self.text_color)
-        self.PortEntry = customtkinter.CTkEntry(self.settingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
-        self.settingsCanvas.create_window(700, 350, window=self.PortEntry)
-        self.loginButton = customtkinter.CTkButton(self.settingsCanvas, text="Mudar", text_color= self.text_color, font=("Impact", 30), command=self.modifieIpPort)
-        self.settingsCanvas.create_window(700, 450, window=self.loginButton)
+
+
+    def conectionSettingsFrame(self):
+        self.clickSound()
+        self.settingsPageFrame.destroy()
+        self.conectionSettingsPageFrame = customtkinter.CTkFrame(self)
+        self.conectionSettingsPageFrame.pack()
+        self.conectionSettingsPageFrame.pack_propagate(False)
+        self.conectionSettingsPageFrame.configure(width=900, height=600)
+        self.conectionSettingsCanvas = self.createCanvas(self.conectionSettingsPageFrame)
+        self.conectionSettingsCanvas.configure(bg=self.bg_color)
+        self.conectionSettingsCanvas.create_text(450, 100, text="Configurações de Conexão", font=("Impact", 80), fill = self.text_color)
+        self.conectionSettingsCanvas.create_text(450, 200, text="IP:", font=("Impact", 30), fill = self.text_color)
+        self.IPEntry = customtkinter.CTkEntry(self.conectionSettingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
+        self.conectionSettingsCanvas.create_window(450, 250, window=self.IPEntry)
+        self.conectionSettingsCanvas.create_text(450, 300, text="Porta:", font=("Impact", 30), fill = self.text_color)
+        self.PortEntry = customtkinter.CTkEntry(self.conectionSettingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
+        self.conectionSettingsCanvas.create_window(450, 350, window=self.PortEntry)
+        self.loginButton = customtkinter.CTkButton(self.conectionSettingsCanvas, text="Mudar", text_color= self.text_color, font=("Impact", 30), command=self.modifieIpPort)
+        self.conectionSettingsCanvas.create_window(450, 450, window=self.loginButton)
         
         self.IPEntry.configure(placeholder_text = host)
         self.PortEntry.configure(placeholder_text = port)
+
+        self.backButton = customtkinter.CTkButton(self.conectionSettingsCanvas, text="Voltar", text_color=self.text_color,
+                                                  font=("Impact", 30), image=self.back_image, compound="left",
+                                                  command=lambda: self.backToMenu(self.conectionSettingsPageFrame))
+        self.conectionSettingsCanvas.create_window(815, 570, window=self.backButton)
 
     def modifieIpPort(self):
         global host, port
@@ -230,8 +249,11 @@ class ClientGUI(customtkinter.CTk):
         self.loginCanvas.create_text(450, 200, text="Nome:", font=("Impact", 30), fill = self.text_color)
         self.usrNameEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
         self.loginCanvas.create_window(450, 250, window=self.usrNameEntry)
+        shwPass = BooleanVar()
+        mostrarSenha = customtkinter.CTkCheckBox(self.loginCanvas, text="Mostrar Senha", text_color=self.text_color, font=("Impact", 30), variable=shwPass, command=lambda: self.usrPassEntry.configure(show='' if shwPass.get() else '*'))
+        self.loginCanvas.create_window(450, 400, window=mostrarSenha)
         self.loginCanvas.create_text(450, 300, text="Senha:", font=("Impact", 30), fill = self.text_color)
-        self.usrPassEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30))
+        self.usrPassEntry = customtkinter.CTkEntry(self.loginCanvas, width=400, font=("Impact", 30), show='*' if not mostrarSenha.get() else '')
         self.loginCanvas.create_window(450, 350, window=self.usrPassEntry)
         self.loginButton = customtkinter.CTkButton(self.loginCanvas, text="Entrar", text_color= self.text_color, font=("Impact", 30), command=lambda: self.login("LOGIN"))
         self.loginCanvas.create_window(450, 450, window=self.loginButton)
@@ -281,17 +303,25 @@ class ClientGUI(customtkinter.CTk):
         #self.profileCanvas.create_image(0, 0, image=self.image, anchor=NW)
         self.rankCanvas.create_text(450, 75, text="Rank", font=("Impact", 80), fill = self.text_color)
         self.rankButtons()
-        self.rankCanvas.create_text(100, 150, text="Name", font=("Impact", 25), fill = self.text_color)
-        self.rankCanvas.create_line(10, 175, 800, 175, fill = self.text_color)
-        self.rankCanvas.create_line(50,150, 25, 800, fill = self.text_color)
-        i = 0
-        j = 1
         self.dataRank = sorted(self.dataRank, key=lambda k: k['vitorias'], reverse=True)
-        for account in range(len(self.dataRank)):
-            self.rankCanvas.create_text(25, 200+i, text = str(j), font= ('Impact', 25), fill = self.text_color)
-            self.rankCanvas.create_text(100, 200+i, text = self.dataRank[account]['user_nickname'].replace('-', ''), font= ('Impact', 25), fill = self.text_color)
-            i = i+50
-            j = j+1
+        table = ttk.Treeview(self.rankPageFrame, columns=('Name', 'Wins', 'Ties', 'Losses'), show='headings')
+        table.heading('#0', text='Index')
+        table.heading('#1', text='Name')
+        table.heading('#2', text='Wins')
+        table.heading('#3', text='Ties')
+        table.heading('#4', text='Losses')
+        i = 0
+        # Insert data into the treeview
+        for row_data in range(len(self.dataRank)):
+            name = self.dataRank[row_data]['user_nickname'].replace('-', '')
+            wins = self.dataRank[row_data]['vitorias']
+            ties = self.dataRank[row_data]['empates']
+            losses = self.dataRank[row_data]['derrotas']
+            i = i + 1
+            table.insert('', 'end', text=i, values=(name, wins, ties, losses))
+
+        self.rankCanvas.create_window(450, 300, window=table)
+
 
     def rankButtons(self):
         if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
@@ -310,7 +340,6 @@ class ClientGUI(customtkinter.CTk):
         self.dataRank = getRankStats()
         print(self.dataRank)
 
-        self.usrName.replace('-', '')
         
         self.backButton = customtkinter.CTkButton(self.rankCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.rankPageFrame))
         self.rankCanvas.create_window(815, 570, window=self.backButton)
