@@ -116,6 +116,7 @@ def waitResponse(event, fileResultado):
 
 def getBoard():
     return board
+
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def connectToServer(ip, port):
@@ -256,10 +257,20 @@ def getRankStats():
     client.send("RNKST".encode('ascii')) 
 
     print("Recebendo dados do servidor")
-    table_json = client.recv(1024).decode()
+    table_json = client.recv(10024).decode()
     table_data = json.loads(table_json)
 
     client.close()
     
     return table_data
-    
+
+def sendLogOut(nickGUI):
+    client.send("LOGOT".encode('ascii')) # Manda LOGIN/REG para o servidor
+
+    nickname = nickGUI
+    message = client.recv(4).decode('ascii') 
+    print("MENSAGEM: " + message)
+    if message == 'NICK':
+        client.send(nickname.encode('ascii'))
+        
+    client.close()

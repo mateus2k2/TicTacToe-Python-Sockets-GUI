@@ -8,7 +8,7 @@ import json
 
 # Connection Data
 host = '127.0.0.1'
-port = 55553
+port = 55555
 limiteSalas = 10
 
 # Starting Server
@@ -18,6 +18,7 @@ server.listen()
 
 salas = []
 IDCriados = []
+userAtivos = []
 simbolo = ['X', 'O']
 
 def checkWin(sala):
@@ -50,11 +51,14 @@ def endGame(sala):
     sala['board'][1][0] = ''; sala['board'][1][1] = ''; sala['board'][1][2]  = '';
     sala['board'][2][0] = ''; sala['board'][2][1] = ''; sala['board'][2][2]  = '';
 
+    # deletar a sala do vetor de salas
+    # salas.remove(sala)
+    
+    # if sala['loginState0'] == "LOGIN": userAtivos.remove(sala['nickjogador0'])
+    # if sala['loginState1'] == "LOGIN": userAtivos.remove(sala['nickJogador1'])
+
     sala['jogador0'].close()
     sala['jogador1'].close()
-
-    # deletar a sala do vetor de salas
-    salas.remove(sala)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -417,11 +421,13 @@ def login(client, address):
     
     user = db.execute("SELECT * FROM users WHERE nickname = ? AND password = ?", (nickname, password)).fetchone()
 
+    # if user is None and nickname not in userAtivos:
     if user is None:
         client.send('LGNO'.encode('ascii'))
+        userAtivos.append(nickname)
     else:
         client.send('LGOK'.encode('ascii'))
-    
+
     db.close()
     client.close()
 
@@ -484,6 +490,16 @@ def rankStats(client, address):
     db.close()
     client.close()
 
+def logOut(client, address):
+    print("CONNECTED CREATE {}".format(str(address)))
+
+    client.send('NICK'.encode('ascii'))
+    nickname = client.recv(25).decode('ascii') 
+    print("NICK RECEBIDO: " + nickname)
+
+    userAtivos.remove(nickname)
+    client.close()
+    
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def decide():
@@ -519,6 +535,11 @@ def decide():
         elif escolha == "LOGIN":
             print("LOGIN")
             thread = threading.Thread(target=login, args=(client, address,))
+            thread.start()
+            
+        elif escolha == "LOGOT":
+            print("LOGIN")
+            thread = threading.Thread(target=logOut, args=(client, address,))
             thread.start()
             
         elif escolha == "REGIS":

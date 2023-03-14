@@ -28,7 +28,7 @@ simbolos = ['X', 'O']
 corSimbulos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
 
 host = '127.0.0.1'
-port = 55553
+port = 55555
 
 class ClientGUI(customtkinter.CTk):
     def __init__(self):
@@ -46,8 +46,8 @@ class ClientGUI(customtkinter.CTk):
         self.play_music()
         self.back_image = ImageTk.PhotoImage(Image.open("Images/back.png").resize((25, 25)))
         
-        font_path = "fonts/impact.ttf"
-        self.fontLoad = Font(family="My Custom Font", size=12, name=font_path)
+        # font_path = "fonts/impact.ttf"
+        # self.fontLoad = Font(family="My Custom Font", size=12, name=font_path)
         
         self.createMenuFrame()
 
@@ -69,15 +69,16 @@ class ClientGUI(customtkinter.CTk):
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    # def loadGifFrames(self):
+    def loadGifFrames(self):
     #     try:
     #         while True:
     #             self.loadingFrames.append(ImageTk.PhotoImage(self.loading.copy()))
     #             self.loading.seek(len(self.loadingFrames))
     #     except EOFError:
     #         pass
+        pass
 
-    # def playGif(self, canvas, event, frame_index=0):
+    def playGif(self, canvas, event, frame_index=0):
     #     self.loading_id = canvas.create_image(790, 490, anchor='nw', image=self.loadingFrames[frame_index])
 
     #     nextFameIndex = (frame_index + 1) % len(self.loadingFrames)
@@ -86,6 +87,7 @@ class ClientGUI(customtkinter.CTk):
     #         canvas.after(3, self.playGif, canvas, event, nextFameIndex)
     #     else:
     #         canvas.delete(self.loading_id)
+        pass
 
 #-----------------------------------------------------------------------------------------------------------------------
             
@@ -147,7 +149,6 @@ class ClientGUI(customtkinter.CTk):
         self.settingsCanvas.create_window(450, 550, window=self.ConectionButton)
         self.backButton = customtkinter.CTkButton(self.settingsCanvas, text="Voltar", text_color= self.text_color, font=("Impact", 30),image=self.back_image,compound= "left", command=lambda: self.backToMenu(self.settingsPageFrame))
         self.settingsCanvas.create_window(815, 570, window=self.backButton)
-
 
     def conectionSettingsFrame(self):
         self.clickSound()
@@ -288,7 +289,15 @@ class ClientGUI(customtkinter.CTk):
         self.loggedIn = True
         self.backToMenu(self.loginPageFrame)
 
-
+    def logOut(self):
+        if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
+            messagebox.showinfo("Error", "Server is not Running")
+            return 
+        
+        sendLogOut(self.usrName)
+        self.loggedIn = False
+        self.usrName = ""
+        
 #------------------------------------------------------RANK---------------------------------------------------------------------------------------
 
     def rankFrame(self):
@@ -304,6 +313,17 @@ class ClientGUI(customtkinter.CTk):
         self.rankCanvas.create_text(450, 75, text="Rank", font=("Impact", 80), fill = self.text_color)
         self.rankButtons()
         self.dataRank = sorted(self.dataRank, key=lambda k: k['vitorias'], reverse=True)
+        
+        s = ttk.Style()
+        s.theme_use('clam')
+        s.configure("Treeview", background="#D3D3D3", 
+                                foreground = "black",
+                                rowheigth = 25,
+                                fieldbackground = "#D3D3D3"
+                                ,)
+        
+        s.map('Treeview', background=[('selected', 'blue')])
+        
         table = ttk.Treeview(self.rankPageFrame, columns=('Name', 'Wins', 'Ties', 'Losses'), show='headings')
         table.heading('#0', text='Index')
         table.heading('#1', text='Name')
@@ -311,6 +331,13 @@ class ClientGUI(customtkinter.CTk):
         table.heading('#3', text='Ties')
         table.heading('#4', text='Losses')
         i = 0
+        
+        verticalScrool = ttk.Scrollbar(self.rankPageFrame, orient = "vertical", command = table.yview)
+        table.configure(xscrollcommand = verticalScrool.set)
+        
+        table.tag_configure('selected', background='red')
+        table.item(table.selection(), tags=('selected',))
+
         # Insert data into the treeview
         for row_data in range(len(self.dataRank)):
             name = self.dataRank[row_data]['user_nickname'].replace('-', '')
@@ -318,10 +345,11 @@ class ClientGUI(customtkinter.CTk):
             ties = self.dataRank[row_data]['empates']
             losses = self.dataRank[row_data]['derrotas']
             i = i + 1
-            table.insert('', 'end', text=i, values=(name, wins, ties, losses))
+            item_id = table.insert('', 'end', text=i, values=(name, wins, ties, losses))
+            if name == self.usrName:
+                table.item(item_id, tags=('selected',))
 
         self.rankCanvas.create_window(450, 300, window=table)
-
 
     def rankButtons(self):
         if connectToServer(host, port) == False: # Verifica se o servidor esta rodando
@@ -633,6 +661,7 @@ class ClientGUI(customtkinter.CTk):
         # sys.exit()
         print("Quit Function")
         endGame()
+        # self.logOut()
         self.backToMenu(self.playPageFrame)
 
     def play(self, frame):
@@ -823,4 +852,3 @@ client = ClientGUI()
 client.mainloop()
 print("Fim do jogo")
 sys.exit()
-
