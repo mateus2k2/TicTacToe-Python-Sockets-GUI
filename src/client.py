@@ -12,6 +12,8 @@ board = [['', '', ''],
 # vetor auxiliar para determinar o simbolo do jogador
 simbolos = ['X', 'O']
 
+#------------------------------------------------UTILITÁRIOS--------------------------------------------------------------------------------------
+
 def printBoard():
     for i in range(3):
         print("-" * 14)
@@ -35,7 +37,7 @@ def endGame():
     board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
     client.close()
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------JOGO EM SI--------------------------------------------------------------------------------------
 
 def recvGameState(simbolo):
     #Recebe o movimento do oponente ou o proprio movimento
@@ -117,7 +119,7 @@ def waitResponse(event, fileResultado):
 def getBoard():
     return board
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------CONECTAR NO SERVER---------------------------------------------------------------------------------------
 
 def connectToServer(ip, port):
     global client
@@ -127,7 +129,7 @@ def connectToServer(ip, port):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((ip, port))
         # Recebe a resposta do servidor = OK, FULL
-        resposta = client.recv(1024).decode('ascii')
+        resposta = client.recv(4).decode('ascii')
         if(resposta == "OK"):
             return True
         elif(resposta == "FULL"):
@@ -138,7 +140,7 @@ def connectToServer(ip, port):
         print("Server is not running")
         return False
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------ENTRAR EM JOGO IA-----------------------------------------------------------------------------------------
 
 def joinGameIA(GUINick, dificultade):
     client.send("JOINIA".encode('ascii')) # Manda join para o servidor
@@ -154,7 +156,7 @@ def joinGameIA(GUINick, dificultade):
     if message == 'DIFC':
         client.send(dificultade.encode('ascii')) # Manda o nickname para o servidor
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------ENTRAR EM JOGO--------------------------------------------------------------------------------------------
 
 def joinGame(GUINick):
     client.send("JOIN".encode('ascii')) # Manda join para o servidor
@@ -174,7 +176,7 @@ def sendID(GUIID):
     if message != "IDRQ": return True
     return False
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------CRIAR JOGO----------------------------------------------------------------------------------------
 
 def createGame(GUINick):
     client.send("CREATE".encode('ascii')) # Manda create para o servidor
@@ -202,7 +204,7 @@ def waitingRoom(event):
         return True
     return False
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------LOGIN REGISTER E RANK------------------------------------------------------------------------------------------
 
 def sendLoginRegister(nickGUI, passwordGUI, option):
     client.send(option.encode('ascii')) # Manda LOGIN/REG para o servidor
@@ -257,7 +259,12 @@ def getRankStats():
     client.send("RNKST".encode('ascii')) 
 
     print("Recebendo dados do servidor")
-    table_json = client.recv(10024).decode()
+    table_json = ""
+    while True:
+        data = client.recv(1024).decode()
+        if not data:
+            break
+        table_json += data
     table_data = json.loads(table_json)
 
     client.close()

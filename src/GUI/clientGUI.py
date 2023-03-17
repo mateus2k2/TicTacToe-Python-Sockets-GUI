@@ -9,13 +9,11 @@ warnings.filterwarnings('ignore', category=UserWarning, module='customtkinter')
 
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "1"
 
-
 #------------------------------------------------------------------------------------------------------------------------------------------------------
 
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from tkinter.font import Font
 import customtkinter
 from PIL import ImageTk, Image
 import pygame
@@ -25,7 +23,7 @@ from queue import Queue
 import threading
 
 simbolos = ['X', 'O']
-corSimbulos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
+corSimbolos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
 
 host = '127.0.0.1'
 port = 55555
@@ -51,12 +49,12 @@ class ClientGUI(customtkinter.CTk):
         
         self.createMenuFrame()
 
+#-----------------------------------------------UTEIS---------------------------------------------------------------------------------------------------
+
     def createCanvas(self, master):
         canvas = customtkinter.CTkCanvas(master, width=900, height=600)
         canvas.pack()
         return canvas
-
-#------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def play_music(self):
         self.music = pygame.mixer.Sound("Sounds/Music.wav")
@@ -66,8 +64,6 @@ class ClientGUI(customtkinter.CTk):
     def clickSound(self):
         click = pygame.mixer.Sound("Sounds/click.wav")
         click.play()
-
-#------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def loadGifFrames(self):
     #     try:
@@ -89,8 +85,6 @@ class ClientGUI(customtkinter.CTk):
     #         canvas.delete(self.loading_id)
         pass
 
-#-----------------------------------------------------------------------------------------------------------------------
-            
     def backToMenu(self, page):
         self.clickSound()
         page.destroy()
@@ -159,7 +153,7 @@ class ClientGUI(customtkinter.CTk):
         self.conectionSettingsPageFrame.configure(width=900, height=600)
         self.conectionSettingsCanvas = self.createCanvas(self.conectionSettingsPageFrame)
         self.conectionSettingsCanvas.configure(bg=self.bg_color)
-        self.conectionSettingsCanvas.create_text(450, 100, text="Configurações de Conexão", font=("Impact", 80), fill = self.text_color)
+        self.conectionSettingsCanvas.create_text(450, 100, text="Conexão", font=("Impact", 80), fill = self.text_color)
         self.conectionSettingsCanvas.create_text(450, 200, text="IP:", font=("Impact", 30), fill = self.text_color)
         self.IPEntry = customtkinter.CTkEntry(self.conectionSettingsCanvas, width=200, font=("Impact", 30), placeholder_text_color = "#c0c0c0")
         self.conectionSettingsCanvas.create_window(450, 250, window=self.IPEntry)
@@ -185,7 +179,7 @@ class ClientGUI(customtkinter.CTk):
         PortEntryValue = self.PortEntry.get()
         
         if(IPEntryValue == "" or PortEntryValue == "" or PortEntryValue.isnumeric() == False or IPEntryValue.replace('.', '').isnumeric() == False):
-            messagebox.showinfo("Error", "Valores Imvalidos")
+            messagebox.showinfo("Error", "Valores Invalidos")
             return
         else:
             host = IPEntryValue
@@ -322,7 +316,7 @@ class ClientGUI(customtkinter.CTk):
                                 fieldbackground = "#D3D3D3"
                                 ,)
         
-        s.map('Treeview', background=[('selected', 'blue')])
+        s.map('Treeview', background=[('selected', corSimbolos[0])])
         
         table = ttk.Treeview(self.rankPageFrame, columns=('Name', 'Wins', 'Ties', 'Losses'), show='headings')
         table.heading('#0', text='Index')
@@ -335,7 +329,7 @@ class ClientGUI(customtkinter.CTk):
         verticalScrool = ttk.Scrollbar(self.rankPageFrame, orient = "vertical", command = table.yview)
         table.configure(xscrollcommand = verticalScrool.set)
         
-        table.tag_configure('selected', background='red')
+        table.tag_configure('selected', background=corSimbolos[1])
         table.item(table.selection(), tags=('selected',))
 
         # Insert data into the treeview
@@ -457,7 +451,7 @@ class ClientGUI(customtkinter.CTk):
         print("Jogar")
         self.play(self.waitingRoomPageFrame) # Chama a tela de jogo
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------ENTRAR EM SALA-------------------------------------------------------------------------------------------
 
     def joinGameFrame(self):
         self.clickSound()
@@ -548,7 +542,7 @@ class ClientGUI(customtkinter.CTk):
         self.SendIDButton = customtkinter.CTkButton(self.SendIDCanvas, text="Entrar", text_color = self.text_color, font=("Impact", 30), command=lambda: OkCallback(False))
         self.SendIDCanvas.create_window(300, 400, window=self.SendIDButton)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------ENTRAR EM JOGO IA---------------------------------------------------------------------------------------
             
     def joinGameIAFrame(self):
         self.clickSound()
@@ -600,7 +594,7 @@ class ClientGUI(customtkinter.CTk):
         self.backButton = customtkinter.CTkButton(self.joinGameIACanvas, text="Voltar", font=("Impact", 30), text_color=self.text_color, image=self.back_image, compound="left" , command=lambda: self.backToMenu(self.joinGameIAPageFrame))
         self.joinGameIACanvas.create_window(450, 500, window=self.backButton)
 
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#---------------------------------------------------JOGO EM SI-------------------------------------------------------------------------------------
 
     def resetGameGUI(self):
         for button in self.buttons:
@@ -691,15 +685,15 @@ class ClientGUI(customtkinter.CTk):
                                            text = "Voce → " + simbolos[self.simboloInt] + "\n" + 
                                           "Nome → " + self.nick + "\n" + 
                                           "pts → " + str(self.countVitorias), 
-                                          fill = corSimbulos[self.simboloInt]) # Atualiza o placar do jogador
+                                          fill = corSimbolos[self.simboloInt]) # Atualiza o placar do jogador
                 
                 self.playCanvas.itemconfig(self.textoPlacarAponente, 
                                            text = simbolos[1 - self.simboloInt] + " ← Oponente" + "\n" + 
                                            self.nickOponente + " ← Nome" + "\n" + 
                                            str(self.countDerrotas) + " ← pts", 
-                                           fill = corSimbulos[1 - self.simboloInt]) # Atualiza o placar do oponente
+                                           fill = corSimbolos[1 - self.simboloInt]) # Atualiza o placar do oponente
 
-                time.sleep(2)
+                time.sleep(2) # tempo para a funcao turnPlay() ser executada
 
                 print("TURNO: " + self.turn)
 
@@ -750,7 +744,7 @@ class ClientGUI(customtkinter.CTk):
             print("WIN")
             printBoard()
             position = recvGameState(simbolo)
-            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbolos[simbolo])
             pygame.mixer.pause()
             music_win = pygame.mixer.Sound("Sounds/vitoria.wav")
             music_win.play()
@@ -764,7 +758,7 @@ class ClientGUI(customtkinter.CTk):
             print("DEF")
             printBoard()
             position = recvGameState(simbolo)
-            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbolos[simbolo])
             pygame.mixer.pause()
             music_loss = pygame.mixer.Sound("Sounds/derrota.mp3")
             music_loss.play()
@@ -778,7 +772,7 @@ class ClientGUI(customtkinter.CTk):
             print("TIE")
             printBoard()
             position = recvGameState(simbolo)
-            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbolos[simbolo])
             pygame.mixer.pause()
             self.music_tie = pygame.mixer.Sound("Sounds/empate.mp3")
             self.music_tie.play()
@@ -792,7 +786,7 @@ class ClientGUI(customtkinter.CTk):
             print("VAL")
             printBoard()
             position = recvGameState(simbolo)
-            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbulos[simbolo])
+            self.buttons[position].config(text=simbolos[simbolo], state=DISABLED, disabledforeground = corSimbolos[simbolo])
         
         elif message == "INV":
             print("INV")

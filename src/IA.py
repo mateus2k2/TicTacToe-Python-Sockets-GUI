@@ -159,7 +159,10 @@ class IAOponent:
         return dict[move]
 
 
-# boardMatrix = [['X', '', ''], ['', '', ''], ['', '', '']]
+# boardMatrix = [['X', '', ''], 
+#                ['', 'O', ''], 
+#                ['', '', '']]
+
 # computerletter = 'X'
 # theFirstPlayerNumber = 0
 # turnNumber = 0
