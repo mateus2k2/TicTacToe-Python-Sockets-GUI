@@ -674,6 +674,8 @@ class ClientGUI(customtkinter.CTk):
 
         self.playing = True
         self.buttonPressed = BooleanVar(value=False)
+        
+        time.sleep(5)
 
         # ---------------------------------------------------------------------------------------------------
         try:
@@ -693,7 +695,7 @@ class ClientGUI(customtkinter.CTk):
                                            str(self.countDerrotas) + " ← pts", 
                                            fill = corSimbolos[1 - self.simboloInt]) # Atualiza o placar do oponente
 
-                time.sleep(2) # tempo para a funcao turnPlay() ser executada
+                # time.sleep(2) # tempo para a funcao turnPlay() ser executada
 
                 print("TURNO: " + self.turn)
 
@@ -705,6 +707,7 @@ class ClientGUI(customtkinter.CTk):
                             button.config(state=NORMAL) # Ativa o botao
 
                     self.wait_variable(self.buttonPressed) # Esperar por um botao ser pressionado
+                    self.buttonPressed = BooleanVar(value=False)
 
                 elif self.turn == 'WAIT':
                     self.playCanvas.itemconfig(self.textoJogarEsperar, text="TRUNO DO OPODENTE. ESPERE") # Atualiza o texto de jogar ou esperar
