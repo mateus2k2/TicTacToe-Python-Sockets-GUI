@@ -16,6 +16,9 @@ server:
 db:
 	@clear && cd ./testes && python db.py
 
+requirements:
+	@clear && pip install -r requirements.txt
+
 
 pulse:
 	@clear && cd "C:\Users\mateu\Downloads\FACULDADE\1-COMP\4-Periodo\REDES\TPs\TP1\pulseaudio\bin" && ./pulseaudio.exe

@@ -12,7 +12,7 @@ import json
 
 # Connection Data
 host = '127.0.0.1'
-port = 55555
+port = 55551
 limiteSalas = 10
 
 # Starting Server
@@ -119,7 +119,20 @@ def play(sala, db):
     # ---------------------------------------------------------------
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
-
+    
+    # ---------------------------------------------------------------
+    #Recebe o estado de login de cada jogador
+    loginState1 = sala['jogador0'].recv(5).decode('ascii')
+    loginState0 = sala['jogador1'].recv(5).decode('ascii')
+    
+    sala['loginState0'] = loginState1
+    sala['loginState1'] = loginState0
+    # sala['vitoriaSeguidas0'] = 0
+    # sala['vitoriaSeguidas1'] = 0
+    
+    # print("loginState0: " + str(loginState1))
+    # print("loginState1: " + str(loginState0))
+    
     # ---------------------------------------------------------------
     sala['board'] =[['', '', ''],
                     ['', '', ''],
@@ -143,18 +156,6 @@ def play(sala, db):
     # Envia o nick de cada jogador
     sala['jogador' + str(jogando)].send(sala['nickjogador' + str(oponente)].encode('ascii'))
     sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
-    
-    #Recebe o estado de login de cada jogador
-    loginState1 = sala['jogador0'].recv(5).decode('ascii')
-    loginState0 = sala['jogador1'].recv(5).decode('ascii')
-    
-    sala['loginState0'] = loginState1
-    sala['loginState1'] = loginState0
-    # sala['vitoriaSeguidas0'] = 0
-    # sala['vitoriaSeguidas1'] = 0
-    
-    # print("loginState0: " + str(loginState1))
-    # print("loginState1: " + str(loginState0))
     
     
     while True:

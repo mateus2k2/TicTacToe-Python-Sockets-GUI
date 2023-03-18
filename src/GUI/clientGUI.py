@@ -26,7 +26,7 @@ simbolos = ['X', 'O']
 corSimbolos = ["#EE4035", "#0392CF"]    # X = vermelho, O = azul
 
 host = '127.0.0.1'
-port = 55555
+port = 55551
 
 class ClientGUI(customtkinter.CTk):
     def __init__(self):
@@ -663,10 +663,12 @@ class ClientGUI(customtkinter.CTk):
 
         # ---------------------------------------------------------------------------------------------------
         
+        # time.sleep(5)
+        sendLoginState(self.loggedIn)
+        
         self.simboloInt = getSimbolo() # Recebe o simbolo do jogador, 0 ou 1 (X ou O)
         self.nickOponente = getNickOponente().replace('-', '') # Recebe o nick do oponente e remove os traços
         print("nickOponente: " + self.nickOponente)
-        sendLoginState(self.loggedIn)
         
         self.countDerrotas = 0
         self.countVitorias = 0
@@ -674,8 +676,6 @@ class ClientGUI(customtkinter.CTk):
 
         self.playing = True
         self.buttonPressed = BooleanVar(value=False)
-        
-        time.sleep(5)
 
         # ---------------------------------------------------------------------------------------------------
         try:
