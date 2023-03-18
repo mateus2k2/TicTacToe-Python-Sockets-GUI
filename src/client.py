@@ -232,6 +232,7 @@ def sendLoginRegister(nickGUI, passwordGUI, option):
 
 def sendLoginState(loggedIn):
     print("loggedIn " + str(loggedIn))
+    
     if(loggedIn):
         client.send("LOGIN".encode('ascii'))
     else:
