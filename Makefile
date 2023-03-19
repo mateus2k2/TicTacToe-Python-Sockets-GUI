@@ -14,7 +14,7 @@ server:
 	@clear && cd ./src && python server.py
 
 db:
-	@clear && cd ./testes && python db.py
+	@clear && cd ./src/database && python db.py
 
 requirements:
 	@clear && pip install -r requirements.txt

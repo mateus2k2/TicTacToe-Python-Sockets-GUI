@@ -542,6 +542,7 @@ def decide():
         print("SERVIDOR ESPERANDO\n")
 
         client, address = server.accept() # Aceita conexão
+        escolha = ""
 
         lockSalas.acquire(timeout=10)
         if(salas.__len__() + 1 > limiteSalas): # Verifica se o limite de salas foi atingido
@@ -549,9 +550,9 @@ def decide():
             client.close() # Fecha a conexão
         else:
             client.send('OK'.encode('ascii')) # Envia mensagem de servidor OK
+            escolha = client.recv(6).decode('ascii') # Recebe a escolha do cliente
         lockSalas.release()
         
-        escolha = client.recv(6).decode('ascii') # Recebe a escolha do cliente
         
         if escolha == "JOIN": 
             print("JOIN")
