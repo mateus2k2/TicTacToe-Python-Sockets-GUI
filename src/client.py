@@ -74,15 +74,15 @@ def endGameDecide(response, event, fileResultado):
     # Se a resposta do servirdor for CNT então os dois jogadores querem continuar 
     if continuar == "CNT":
         print("RESET GAME")
-        event.set()
         fileResultado.put(False)
+        event.set()
         return False
     
     # Se continuar for END entao o jogador decidiu acabar o jogo então pode sair
     if continuar == "END":
         print("FIM JOGO")
-        event.set()
         fileResultado.put(True)
+        event.set()
         return True
 
 def getNickOponente():
@@ -126,8 +126,8 @@ def connectToServer(ip, port):
     
     # Tenta conectar no servidor
     try:
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.connect((ip, port))
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # Cria o socket
+        client.connect((ip, port)) # Conecta no servidor
         # Recebe a resposta do servidor = OK, FULL
         resposta = client.recv(4).decode('ascii')
         if(resposta == "OK"):
@@ -267,7 +267,7 @@ def getRankStats():
             break
         table_json += data
     table_data = json.loads(table_json)
-
+    
     client.close()
     
     return table_data

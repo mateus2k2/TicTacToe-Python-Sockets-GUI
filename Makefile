@@ -16,6 +16,9 @@ server:
 db:
 	@clear && cd ./src/database && python db.py
 
+IA:
+	@clear && cd ./src/ && python IA.py
+
 requirements:
 	@clear && pip install -r requirements.txt
 

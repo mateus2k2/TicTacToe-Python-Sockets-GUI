@@ -7,8 +7,9 @@ import sqlite_utils
 import json
 
 #Variaveis lock para garantir exclusão mutua
-lock = threading.Lock()
+lockDB = threading.Lock()
 lockSalas = threading.Lock()
+lockID = threading.Lock()
 
 # Connection Data
 host = '127.0.0.1'
@@ -89,21 +90,21 @@ def sendGameState(jogador1, jogador2,  mensagem1, mensagem2, movimento):
     jogador2.send(str(movimento).encode('ascii'))
 
 def updateScore(nickname, option, db):
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     if(option == "vitorias"): db.execute("UPDATE user_data SET vitorias = vitorias + 1 WHERE user_nickname = ?", [nickname])
     if(option == "derrotas"): db.execute("UPDATE user_data SET derrotas = derrotas + 1 WHERE user_nickname = ?", [nickname])
     if(option == "empates"):  db.execute("UPDATE user_data SET empates = empates + 1 WHERE user_nickname = ?", [nickname])
     db.conn.commit()
-    lock.release()
+    lockDB.release()
 
 def updateWinStreak(nickname, newWinStreek, db):
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     user_data = db["user_data"]
     user = user_data.find_one(nickname=nickname)
 
     current_win_streak = user.get("vitorias_seguidas", 0)
     if newWinStreek > current_win_streak: user_data.update({"nickname": nickname}, {"$set": {"vitorias_seguidas": newWinStreek}})
-    lock.release()
+    lockDB.release()
     
 def handle(sala):
     # play(sala)
@@ -244,6 +245,9 @@ def handleIA(sala):
     except:
         print("Client Saiu")   
         sala['jogador0'].close()
+        lockSalas.acquire(timeout=10)
+        salas.remove(sala)
+        lockSalas.release()
         
 def playIA(sala):
     # ---------------------------------------------------------------
@@ -264,11 +268,14 @@ def playIA(sala):
     sala['simbJogador0'] = theFirstPlayerNumber        
     sala['simbMaquina'] = 1 - theFirstPlayerNumber       
     
+    recebido = sala['jogador0'].recv(5).decode('ascii')
+    print("TESTE: " + recebido)
+    
     sala['jogador0'].send(str(theFirstPlayerNumber).encode('ascii'))
         
     sala['jogador0'].send("Maquina------------------".encode('ascii'))
     
-    sala['jogador0'].recv(5).decode('ascii')
+    
     
     while True:
 
@@ -294,14 +301,8 @@ def playIA(sala):
         
         if turnoDeQuem == 1:
             time.sleep(1)
-            #boardMatrix, computerletter, theFirstPlayerNumber, turnNumber, difficulty
-            # print(sala['board'])
-            # print(sala['simbMaquina'])
-            # print(theFirstPlayerNumber)
-            # print(sala['jogadas'])  
-            # print(sala['dificuldade'])
             movimento = int(IAObj.getComputerMove(sala['board'], sala['simbMaquina'], theFirstPlayerNumber, sala['jogadas'], sala['dificuldade']))         
-
+            
             linha = int(movimento // 10) - 1
             coluna = int(movimento % 10) - 1
 
@@ -392,12 +393,16 @@ def joinRoom(client, address):
 def createRoom(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
 
+    lockID.acquire(timeout=10)
     ID = str(random.randint(10000000, 99999999)) # Gera um ID aleatório de 8 dígitos
     while ID in IDCriados: # Verifica se o ID já foi criado
         ID = str(random.randint(10000000, 99999999)) # Se sim, gera outro
     client.send(ID.encode('ascii')) # Envia o ID
+    IDCriados.append(ID)
+    lockID.release()
     print("ID CRIADO: " + ID)
 
+    
     client.send('NICK'.encode('ascii')) # Envia Requisição de nickname
     nickname = client.recv(25).decode('ascii') # Recebe o nickname
     print("NICK RECEBIDO: " + nickname)
@@ -443,19 +448,19 @@ def login(client, address):
     password = client.recv(25).decode('ascii') 
     print("PASS RECEBIDO: " + password)
     
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     user = db.execute("SELECT * FROM users WHERE nickname = ? AND password = ?", (nickname, password)).fetchone()   
 
     # if user is None and nickname not in userAtivos:
     if user is None:
         client.send('LGNO'.encode('ascii'))
-        userAtivos.append(nickname)
     else:
         client.send('LGOK'.encode('ascii'))
+        # userAtivos.append(nickname)
 
     db.close()
     client.close()
-    lock.release()
+    lockDB.release()
 
 def register(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
@@ -469,7 +474,7 @@ def register(client, address):
     password = client.recv(25).decode('ascii') 
     print("PASS RECEBIDO: " + password)
 
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     user_row = db.execute("SELECT * FROM users WHERE nickname = ?", [nickname]).fetchone()
     
     if user_row is None:
@@ -485,7 +490,7 @@ def register(client, address):
 
     db.close()
     client.close()
-    lock.release()
+    lockDB.release()
 
 def userStats(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
@@ -496,7 +501,7 @@ def userStats(client, address):
     nickname = client.recv(25).decode('ascii') 
     print("NICK RECEBIDO: " + nickname)
     
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     user = db.execute("SELECT * FROM user_data WHERE user_nickname = ?", [nickname]).fetchone()
 
     if user is not None:
@@ -506,14 +511,14 @@ def userStats(client, address):
     
     db.close()
     client.close()
-    lock.release()
+    lockDB.release()
 
 def rankStats(client, address):
     print("CONNECTED CREATE {}".format(str(address)))
     db = databaseRotine()
     print("rankStats")
     
-    lock.acquire(timeout=10)
+    lockDB.acquire(timeout=10)
     table_data = list(db["user_data"].rows)  # convert generator object to list
     table_json = json.dumps(table_data)
     
@@ -522,7 +527,7 @@ def rankStats(client, address):
     
     db.close()
     client.close()
-    lock.release()
+    lockDB.release()
     
 def logOut(client, address):
     print("CONNECTED CREATE {}".format(str(address)))

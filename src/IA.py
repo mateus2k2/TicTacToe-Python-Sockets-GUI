@@ -1,6 +1,13 @@
 import random
 import numpy as np
 
+# 0 is beginner, the computer will make random moves
+# 1 is easy, the computer will try to block you if possible
+# 2 is intermeddiate, the computer will try to get the center or the corners if possible
+# 3 is expert, running the best possible Tic Tac Toe algorithm, you can't win, but if you play by the same strategy, you will be getting a tie
+
+# https://github.com/maxrimmer/Tic-Tac-Toe-AI
+
 class IAOponent:
     
     def getRandomMove(self, board, moves):
@@ -147,9 +154,9 @@ class IAOponent:
         if(theFirstPlayerNumber == 1): theFirstPlayer = 'computer' 
         
         if difficulty == 0:
-            move = self.getEasyMove(board, computerletter)
-        if difficulty == 1:
             move = self.getBeginnerMove(board, computerletter)
+        if difficulty == 1:
+            move = self.getEasyMove(board, computerletter)
         if difficulty == 2:
             move = self.getIntermediateMove(board, computerletter)
         if difficulty == 3:
@@ -159,14 +166,11 @@ class IAOponent:
         return dict[move]
 
 
-# boardMatrix = [['X', '', ''], 
-#                ['', 'O', ''], 
-#                ['', '', '']]
-
-# computerletter = 'X'
-# theFirstPlayerNumber = 0
-# turnNumber = 0
-# difficulty = 3
+# boardMatrix = [['', '', 'X'], ['O', 'O', ''], ['', 'X', '']]
+# computerletter = 0
+# theFirstPlayerNumber = 1
+# turnNumber = 4
+# difficulty = 1
 
 # obj = IAOponent()
 # retorno = obj.getComputerMove(boardMatrix, computerletter, theFirstPlayerNumber, turnNumber, difficulty)

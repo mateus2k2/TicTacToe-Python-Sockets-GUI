@@ -368,7 +368,7 @@ class ClientGUI(customtkinter.CTk):
 
 #------------------------------------------------------CRIAR JOGO------------------------------------------------------------------------------------
 
-    def createGameFrame(self):
+    def createGameFrame(self):  
         self.clickSound()
         self.menuFrame.destroy()
         self.createGamePageFrame = customtkinter.CTkFrame(self)
@@ -821,6 +821,7 @@ class ClientGUI(customtkinter.CTk):
             message = fileResultado.get() # Pega a mensagem recebida do servidor na thread
 
             self.updateGui(message, 1-self.simboloInt) # Atualiza a GUI com a mensagem recebida do servidor
+            self.clickSound()
             
 
         except:
@@ -829,6 +830,7 @@ class ClientGUI(customtkinter.CTk):
             
     def turnPlay(self, i):
         
+        self.clickSound()
         posicoes = ["11", "12", "13", "21", "22", "23", "31", "32", "33"]
         
         # for i, button in enumerate(self.buttons): # Passa por todos os botoes
