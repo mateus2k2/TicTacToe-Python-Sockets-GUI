@@ -37,6 +37,9 @@ def endGame():
     board[2][0] = ''; board[2][1] = ''; board[2][2]  = '';
     client.close()
 
+def sendOK():
+    client.send("OK".encode('ascii'))
+    
 #------------------------------------------------JOGO EM SI--------------------------------------------------------------------------------------
 
 def recvGameState(simbolo):

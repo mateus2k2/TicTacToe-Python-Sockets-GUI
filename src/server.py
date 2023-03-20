@@ -169,6 +169,9 @@ def play(sala, db):
         sala['jogador' + str(jogando)].send('PLAY'.encode('ascii'))
         sala['jogador' + str(oponente)].send('WAIT'.encode('ascii'))
         
+        loginState1 = sala['jogador0'].recv(2).decode('ascii')
+        loginState0 = sala['jogador1'].recv(2).decode('ascii')
+        
         # ---------------------------------------------------------------
         # Recebe o movimento do jogador
 
@@ -284,6 +287,8 @@ def playIA(sala):
 
         if turnoDeQuem == 0: sala['jogador0'].send('PLAY'.encode('ascii'))
         if turnoDeQuem == 1: sala['jogador0'].send('WAIT'.encode('ascii'))
+        
+        loginState1 = sala['jogador0'].recv(2).decode('ascii')
         
         # ---------------------------------------------------------------
         # Recebe o movimento do jogador

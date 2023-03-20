@@ -681,6 +681,7 @@ class ClientGUI(customtkinter.CTk):
         try:
             while self.playing:
                 self.turn = getTurn()
+                sendOK()
                 printBoard(); print()
 
                 self.playCanvas.itemconfig(self.textoPlacarMeu, 
