@@ -122,6 +122,8 @@ def play(sala, db):
     # ---------------------------------------------------------------
     # Avidar o jogador q criou a sala (sempre o jogador0) que alguem entrou na sala dele 
     sala['jogador0'].send('START'.encode('ascii'))
+    # loginState1 = sala['jogador0'].recv(2).decode('ascii')
+    # loginState0 = sala['jogador1'].recv(2).decode('ascii')
     
     # ---------------------------------------------------------------
     sala['board'] =[['', '', ''],
@@ -134,6 +136,8 @@ def play(sala, db):
     #Recebe o estado de login de cada jogador
     loginState1 = sala['jogador0'].recv(5).decode('ascii')
     loginState0 = sala['jogador1'].recv(5).decode('ascii')
+    # sala['jogador0'].send("OK".encode('ascii')) # OK de sync
+    # sala['jogador1'].send("OK".encode('ascii')) # OK de sync
     
     sala['loginState0'] = loginState1
     sala['loginState1'] = loginState0
@@ -155,11 +159,14 @@ def play(sala, db):
 
     sala['jogador' + str(jogando)].send("0".encode('ascii'))
     sala['jogador' + str(oponente)].send("1".encode('ascii'))
+    # loginState1 = sala['jogador0'].recv(2).decode('ascii') # OK de sync
+    # loginState0 = sala['jogador1'].recv(2).decode('ascii') # OK de sync
     
     # Envia o nick de cada jogador
     sala['jogador' + str(jogando)].send(sala['nickjogador' + str(oponente)].encode('ascii'))
     sala['jogador' + str(oponente)].send(sala['nickjogador' + str(jogando)].encode('ascii'))
-    
+    # loginState1 = sala['jogador0'].recv(2).decode('ascii') # OK de sync
+    # loginState0 = sala['jogador1'].recv(2).decode('ascii') # OK de sync
     
     while True:
 

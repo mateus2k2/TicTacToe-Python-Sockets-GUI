@@ -39,6 +39,9 @@ def endGame():
 
 def sendOK():
     client.send("OK".encode('ascii'))
+
+def recvOK():
+    return client.recv(2).decode('ascii')
     
 #------------------------------------------------JOGO EM SI--------------------------------------------------------------------------------------
 
@@ -203,6 +206,7 @@ def waitingRoom(event):
     message = client.recv(5).decode('ascii') 
     print("MENSAGEM: " + message)
     if message == 'START': 
+        # sendOK()
         event.set()
         return True
     return False

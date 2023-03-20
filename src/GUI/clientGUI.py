@@ -662,12 +662,15 @@ class ClientGUI(customtkinter.CTk):
         self.createPlayFrame(frame)
 
         # ---------------------------------------------------------------------------------------------------
-        
         # time.sleep(5)
+                
         sendLoginState(self.loggedIn)
+        # recvOK()
         
         self.simboloInt = getSimbolo() # Recebe o simbolo do jogador, 0 ou 1 (X ou O)
+        # recvOK()
         self.nickOponente = getNickOponente().replace('-', '') # Recebe o nick do oponente e remove os traços
+        # recvOK()
         print("nickOponente: " + self.nickOponente)
         
         self.countDerrotas = 0
